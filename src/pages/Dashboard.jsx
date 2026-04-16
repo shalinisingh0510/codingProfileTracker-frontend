@@ -48,11 +48,14 @@ const PlatformSection = ({ name, data, color, icon }) => {
       {
         label: `${name} Rating`,
         data: data.ratingGraph?.map(g => g.rating) || [],
-        borderColor: color.replace('text-', '').replace('500', '400'),
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: color.replace('text-', '').includes('yellow') ? '#f59e0b' : 
+                    color.replace('text-', '').includes('red') ? '#ef4444' : '#22c55e',
+        backgroundColor: color.replace('text-', '').includes('yellow') ? 'rgba(245, 158, 11, 0.1)' : 
+                        color.replace('text-', '').includes('red') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
         fill: true,
         tension: 0.1,
-        pointRadius: 2,
+        pointRadius: 3,
+        pointHoverRadius: 6,
       },
     ],
   };
@@ -62,12 +65,12 @@ const PlatformSection = ({ name, data, color, icon }) => {
     labels: data.solvedGraph?.map(g => g.date) || [],
     datasets: [
       {
-        label: 'Daily Solved',
+        label: 'Problems Solved',
         data: data.solvedGraph?.map(g => g.count) || [],
-        backgroundColor: color.replace('text-', '').includes('yellow') ? 'rgba(245, 158, 11, 0.6)' : 
-                        color.replace('text-', '').includes('green') ? 'rgba(34, 197, 94, 0.6)' : 
-                        'rgba(239, 68, 68, 0.6)',
-        borderRadius: 4,
+        backgroundColor: color.replace('text-', '').includes('yellow') ? 'rgba(245, 158, 11, 0.8)' : 
+                        color.replace('text-', '').includes('green') ? 'rgba(34, 197, 94, 0.8)' : 
+                        'rgba(239, 68, 68, 0.8)',
+        borderRadius: 6,
       },
     ],
   };
@@ -78,51 +81,100 @@ const PlatformSection = ({ name, data, color, icon }) => {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#1e293b',
+        backgroundColor: '#0f172a',
         padding: 12,
-        cornerRadius: 8,
+        cornerRadius: 12,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
+        displayColors: false,
       }
     },
     scales: {
       x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } },
-      y: { grid: { color: 'rgba(51, 65, 85, 0.4)' }, ticks: { color: '#64748b', font: { size: 10 } } }
+      y: { grid: { color: 'rgba(51, 65, 85, 0.4)', drawBorder: false }, ticks: { color: '#64748b', font: { size: 10 } } }
     }
   };
 
   return (
-    <div className="bg-gray-800/40 p-6 md:p-8 rounded-[2rem] border border-gray-800 mb-12 shadow-2xl">
+    <div className="bg-gray-800/40 p-6 md:p-10 rounded-[2.5rem] border border-gray-800 mb-12 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all hover:border-gray-700">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h2 className={`text-3xl font-black tracking-tighter flex items-center gap-3 ${color}`}>
-          <span className="p-3 bg-gray-900 rounded-2xl shadow-inner">{icon}</span>
-          {name} Profile
-        </h2>
-        <div className="flex gap-2">
-           <span className="px-4 py-1.5 bg-gray-900 rounded-full text-xs font-bold text-gray-400 border border-gray-700">
-             {data.rank || data.ranking || 'N/A'}
-           </span>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 bg-gray-900 rounded-3xl flex items-center justify-center text-2xl font-black shadow-inner border border-gray-800">
+            {icon}
+          </div>
+          <div>
+            <h2 className={`text-4xl font-black tracking-tighter ${color}`}>
+              {name}
+            </h2>
+            <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.3em] mt-1">{data.rank || data.ranking || 'Newbie'}</p>
+          </div>
+        </div>
+        
+        <div className="flex gap-3">
+           <div className="bg-gray-900/80 px-6 py-3 rounded-2xl border border-gray-800 text-center">
+             <span className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Current Rating</span>
+             <span className={`text-xl font-black ${color}`}>{data.rating || '---'}</span>
+           </div>
         </div>
       </div>
 
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900/50 p-5 rounded-2xl border border-gray-800">
-          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-1">Total Solved</span>
-          <span className="text-2xl font-black text-white">{data.totalSolved || data.problemsSolved || 0}</span>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div className="bg-gray-900/60 p-6 rounded-3xl border border-gray-800/50 group hover:bg-gray-900 transition-colors">
+          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">Total Solved</span>
+          <span className="text-3xl font-black text-white group-hover:text-blue-400 transition-colors">{data.totalSolved || 0}</span>
         </div>
-        <div className="bg-gray-900/50 p-5 rounded-2xl border border-gray-800">
-          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-1">Solved (2024)</span>
-          <span className="text-2xl font-black text-emerald-500">{data.solvedThisYear || 0}</span>
+        <div className="bg-gray-900/60 p-6 rounded-3xl border border-gray-800/50 group hover:bg-gray-900 transition-colors">
+          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">Solved (2024)</span>
+          <span className="text-3xl font-black text-emerald-500">{data.solvedThisYear || 0}</span>
         </div>
-        <div className="bg-gray-900/50 p-5 rounded-2xl border border-gray-800">
-          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-1">Max Rating</span>
-          <span className="text-2xl font-black text-blue-500">{data.maxRating || '--'}</span>
+        <div className="bg-gray-900/60 p-6 rounded-3xl border border-gray-800/50 group hover:bg-gray-900 transition-colors">
+          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">Max Rating</span>
+          <span className="text-3xl font-black text-blue-500">{data.maxRating || '--'}</span>
         </div>
-        <div className="bg-gray-900/50 p-5 rounded-2xl border border-gray-800">
-          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-1">Contests</span>
-          <span className="text-2xl font-black text-purple-500">{data.contestsParticipated || 0}</span>
+        <div className="bg-gray-900/60 p-6 rounded-3xl border border-gray-800/50 group hover:bg-gray-900 transition-colors">
+          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">Contests</span>
+          <span className="text-3xl font-black text-purple-500">{data.contestsParticipated || 0}</span>
         </div>
       </div>
+
+      {/* Difficulty Breakdown - Special for LeetCode but visible if data exists */}
+      {(data.easySolved !== undefined || data.mediumSolved !== undefined || data.hardSolved !== undefined) && (
+        <div className="mb-10 bg-gray-900/30 p-8 rounded-[2rem] border border-gray-800">
+          <h4 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-6">Difficulty Breakdown</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+            <div className="relative h-4 bg-gray-800 rounded-full overflow-hidden md:col-span-2 flex">
+              <div 
+                className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                style={{ width: `${(data.easySolved / data.totalSolved) * 100}%` }}
+              />
+              <div 
+                className="h-full bg-yellow-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]" 
+                style={{ width: `${(data.mediumSolved / data.totalSolved) * 100}%` }}
+              />
+              <div 
+                className="h-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]" 
+                style={{ width: `${(data.hardSolved / data.totalSolved) * 100}%` }}
+              />
+            </div>
+            <div className="flex justify-between md:justify-end gap-6">
+              <div className="text-center">
+                <span className="text-emerald-500 font-black text-lg block">{data.easySolved || 0}</span>
+                <span className="text-[10px] text-gray-500 uppercase font-bold">Easy</span>
+              </div>
+              <div className="text-center">
+                <span className="text-yellow-500 font-black text-lg block">{data.mediumSolved || 0}</span>
+                <span className="text-[10px] text-gray-500 uppercase font-bold">Medium</span>
+              </div>
+              <div className="text-center">
+                <span className="text-red-500 font-black text-lg block">{data.hardSolved || 0}</span>
+                <span className="text-[10px] text-gray-500 uppercase font-bold">Hard</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Graphs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -192,71 +244,85 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="font-bold tracking-widest uppercase text-xs text-blue-400">Syncing Data</span>
+      <div className="min-h-screen bg-[#060e20] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 border-4 border-[#ba9eff]/20 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-[#53ddfc] border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <span className="font-black tracking-[0.4em] uppercase text-[10px] text-[#53ddfc] animate-pulse">Synchronizing Data</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 md:p-12 font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-[#060e20] text-[#dee5ff] p-4 md:p-12 lg:p-20 font-sans selection:bg-[#ba9eff]/30 scroll-smooth">
       <div className="max-w-7xl mx-auto">
-        {/* New Hero Header */}
-        <div className="relative mb-16 p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-br from-gray-800/80 to-gray-900/90 border border-gray-800 overflow-hidden shadow-2xl">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full"></div>
-          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-600/10 blur-[100px] rounded-full"></div>
+        {/* Editorial Hero Header */}
+        <div className="relative mb-24 overflow-visible">
+          {/* Liquid background blobs */}
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#ba9eff]/10 blur-[120px] rounded-full animate-pulse"></div>
+          <div className="absolute top-20 -left-40 w-80 h-80 bg-[#53ddfc]/10 blur-[100px] rounded-full"></div>
           
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="text-center md:text-left">
-              <span className="inline-block px-4 py-1.5 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4 border border-blue-500/20">
-                Performance Overview
-              </span>
-              <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-4 text-white">
-                {user?.name || 'Developer'}<span className="text-blue-500">.</span>
+          <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="h-px w-12 bg-[#ba9eff]"></span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ba9eff]">The Digital Architect</span>
+              </div>
+              <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-white leading-none mb-8">
+                {user?.name?.split(' ')[0] || 'Developer'}<span className="text-[#53ddfc]">.</span>
               </h1>
-              <p className="max-w-md text-gray-400 font-medium leading-relaxed">
-                Your unified coding profile dashboard. Track your growth, ratings, and consistency across platforms.
+              <p className="text-xl text-[#a3aac4] font-medium leading-relaxed max-w-lg">
+                Your high-performance analytics deck. Mapping your technical evolution across the global competitive landscape.
               </p>
             </div>
             
-            <div className="flex gap-4 md:gap-8 bg-gray-900/50 p-8 rounded-3xl border border-gray-800 shadow-inner">
-               <div className="text-center">
-                 <span className="block text-4xl font-black text-white">{data?.totalSolved || 0}</span>
-                 <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Total Solved</span>
+            <div className="flex bg-[#0f1930]/40 backdrop-blur-3xl p-10 rounded-[3rem] border border-[#192540] shadow-[0_40px_80px_rgba(0,0,0,0.4)] transition-transform hover:scale-[1.02]">
+               <div className="text-center px-6">
+                 <span className="block text-5xl font-black text-white mb-2">{data?.totalSolved || 0}</span>
+                 <span className="text-[10px] text-[#a3aac4] uppercase font-black tracking-widest whitespace-nowrap">Global Solved</span>
                </div>
-               <div className="w-px bg-gray-800 h-12 "></div>
-               <div className="text-center">
-                 <span className="block text-4xl font-black text-blue-400">{data?.averageProblemsPerDay || 0}</span>
-                 <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Avg Daily</span>
+               <div className="w-px bg-[#192540] mx-4 h-16 self-center"></div>
+               <div className="text-center px-6">
+                 <span className="block text-5xl font-black text-[#53ddfc] mb-2">{data?.averageProblemsPerDay || 0}</span>
+                 <span className="text-[10px] text-[#a3aac4] uppercase font-black tracking-widest whitespace-nowrap">Daily Velocity</span>
                </div>
             </div>
           </div>
         </div>
 
-        {/* Platform Sections */}
-        <PlatformSection 
-          name="LeetCode" 
-          data={data?.platforms?.leetcode} 
-          color="text-yellow-500" 
-          icon="LC" 
-        />
-        
-        <PlatformSection 
-          name="Codeforces" 
-          data={data?.platforms?.codeforces} 
-          color="text-red-500" 
-          icon="CF" 
-        />
-        
-        <PlatformSection 
-          name="GeeksforGeeks" 
-          data={data?.platforms?.gfg} 
-          color="text-green-500" 
-          icon="GG" 
-        />
+        {/* Platform Sections with Liquid Obsidian Theme */}
+        <div className="space-y-24">
+          <PlatformSection 
+            name="LeetCode" 
+            data={data?.platforms?.leetcode} 
+            color="text-[#f59e0b]" 
+            icon={<span className="text-2xl">⚡</span>} 
+          />
+          
+          <PlatformSection 
+            name="Codeforces" 
+            data={data?.platforms?.codeforces} 
+            color="text-[#ef4444]" 
+            icon={<span className="text-2xl">🏆</span>} 
+          />
+          
+          <PlatformSection 
+            name="GeeksforGeeks" 
+            data={data?.platforms?.gfg} 
+            color="text-[#22c55e]" 
+            icon={<span className="text-2xl">🌳</span>} 
+          />
+        </div>
+
+        {/* Footer info */}
+        <div className="mt-32 pt-12 border-t border-[#192540] text-center">
+           <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#4d556b]">
+             Powered by CodeProfile Aggregator v2.0
+           </p>
+        </div>
       </div>
     </div>
   );
