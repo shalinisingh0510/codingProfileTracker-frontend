@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
+import { login } from '../services/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,12 +16,12 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const data = await login({ email, password });
       
       // Assume the backend returns the token and some user info
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data));
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data));
         navigate('/dashboard');
       }
     } catch (err) {

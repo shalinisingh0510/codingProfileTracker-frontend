@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { getDashboardData } from '../services/api';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -40,8 +40,8 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await api.get('/dashboard');
-        setData(response.data);
+        const dashboardData = await getDashboardData();
+        setData(dashboardData);
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem('token');

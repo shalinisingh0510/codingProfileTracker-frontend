@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
+import { register } from '../services/api';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -29,11 +29,11 @@ const Register = () => {
     setError('');
 
     try {
-      const response = await api.post('/auth/register', formData);
+      const data = await register(formData);
       
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data));
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data));
         navigate('/dashboard');
       }
     } catch (err) {
