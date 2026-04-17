@@ -257,15 +257,35 @@ const Dashboard = () => {
           
           <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12">
             <div className="max-w-2xl">
-              <div className="flex items-center gap-3 mb-6">
-                <span className="h-px w-12 bg-[#ba9eff]"></span>
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ba9eff]">The Digital Architect</span>
+              <div className="flex items-center gap-6 mb-8">
+                {data?.user?.profilePic ? (
+                  <img src={data.user.profilePic} alt="Profile" className="w-24 h-24 rounded-[2rem] border-2 border-[#ba9eff] p-1 object-cover shadow-[0_0_30px_rgba(186,158,255,0.2)]" />
+                ) : (
+                  <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center text-4xl font-black text-white shadow-xl">
+                    {data?.user?.name?.[0] || 'D'}
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="h-px w-8 bg-[#ba9eff]"></span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ba9eff]">{data?.user?.collegeName || 'Digital Architect'}</span>
+                  </div>
+                  <h1 className="text-6xl md:text-7xl font-black tracking-tighter text-white leading-tight">
+                    {data?.user?.name || 'Developer'}<span className="text-[#53ddfc]">.</span>
+                  </h1>
+                </div>
               </div>
-              <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-white leading-none mb-8">
-                {user?.name?.split(' ')[0] || 'Developer'}<span className="text-[#53ddfc]">.</span>
-              </h1>
+              
+              <div className="flex flex-wrap gap-2 mb-8">
+                {data?.user?.skills?.map((skill, idx) => (
+                  <span key={idx} className="px-4 py-1.5 bg-[#192540]/50 border border-[#ba9eff]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#ba9eff]">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+              
               <p className="text-xl text-[#a3aac4] font-medium leading-relaxed max-w-lg">
-                Your high-performance analytics deck. Mapping your technical evolution across the global competitive landscape.
+                High-performance analytics mapping your technical evolution across the global competitive landscape.
               </p>
             </div>
             
@@ -283,42 +303,89 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Platform Sections with Liquid Obsidian Theme */}
+        {/* Platform Sections - Dynamic Rendering */}
         <div className="space-y-24">
-          <PlatformSection 
-            name="LeetCode" 
-            data={data?.platforms?.leetcode} 
-            color="text-[#f59e0b]" 
-            icon={<span className="text-2xl">⚡</span>} 
-          />
+          {data?.platforms?.leetcode && !data.platforms.leetcode.error && (
+            <PlatformSection 
+              name="LeetCode" 
+              data={data.platforms.leetcode} 
+              color="text-[#f59e0b]" 
+              icon={<span className="text-2xl">⚡</span>} 
+            />
+          )}
 
-          <PlatformSection 
-            name="GitHub" 
-            data={data?.platforms?.github} 
-            color="text-[#818cf8]" 
-            icon={<span className="text-2xl">🐙</span>} 
-            labels={{
-              total: 'Core Contributions',
-              recent: 'Annual Activity',
-              rating: 'Followers',
-              max: 'Repositories',
-              extra: 'Pull Requests'
-            }}
-          />
+          {data?.platforms?.github && !data.platforms.github.error && (
+            <PlatformSection 
+              name="GitHub" 
+              data={data.platforms.github} 
+              color="text-[#818cf8]" 
+              icon={<span className="text-2xl">🐙</span>} 
+              labels={{
+                total: 'Core Contributions',
+                recent: 'Annual Activity',
+                rating: 'Followers',
+                max: 'Repositories',
+                extra: 'Pull Requests'
+              }}
+            />
+          )}
           
-          <PlatformSection 
-            name="Codeforces" 
-            data={data?.platforms?.codeforces} 
-            color="text-[#ef4444]" 
-            icon={<span className="text-2xl">🏆</span>} 
-          />
+          {data?.platforms?.codeforces && !data.platforms.codeforces.error && (
+            <PlatformSection 
+              name="Codeforces" 
+              data={data.platforms.codeforces} 
+              color="text-[#ef4444]" 
+              icon={<span className="text-2xl">🏆</span>} 
+            />
+          )}
           
-          <PlatformSection 
-            name="GeeksforGeeks" 
-            data={data?.platforms?.gfg} 
-            color="text-[#22c55e]" 
-            icon={<span className="text-2xl">🌳</span>} 
-          />
+          {data?.platforms?.gfg && !data.platforms.gfg.error && (
+            <PlatformSection 
+              name="GeeksforGeeks" 
+              data={data.platforms.gfg} 
+              color="text-[#22c55e]" 
+              icon={<span className="text-2xl">🌳</span>} 
+            />
+          )}
+
+          {data?.platforms?.codechef && !data.platforms.codechef.error && (
+            <PlatformSection 
+              name="CodeChef" 
+              data={data.platforms.codechef} 
+              color="text-[#92400e]" 
+              icon={<span className="text-2xl">👨‍🍳</span>} 
+            />
+          )}
+
+          {data?.platforms?.hackerrank && !data.platforms.hackerrank.error && (
+            <PlatformSection 
+              name="HackerRank" 
+              data={data.platforms.hackerrank} 
+              color="text-[#059669]" 
+              icon={<span className="text-2xl">💻</span>} 
+            />
+          )}
+
+          {data?.platforms?.hackerearth && !data.platforms.hackerearth.error && (
+            <PlatformSection 
+              name="HackerEarth" 
+              data={data.platforms.hackerearth} 
+              color="text-[#3b82f6]" 
+              icon={<span className="text-2xl">🌍</span>} 
+            />
+          )}
+
+          {Object.values(data?.platforms || {}).every(p => !p || p.error) && (
+            <div className="text-center py-20 bg-gray-900/20 rounded-[3rem] border border-dashed border-gray-800">
+              <p className="text-gray-500 font-medium mb-6">No platforms configured yet.</p>
+              <button 
+                onClick={() => navigate('/profile')}
+                className="px-8 py-3 bg-[#ba9eff] hover:bg-[#ba9eff]/80 text-[#060e20] font-black rounded-2xl transition-all"
+              >
+                Setup Your Profiles
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Footer info */}

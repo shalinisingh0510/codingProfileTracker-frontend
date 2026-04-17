@@ -32,6 +32,7 @@ const Navbar = () => {
                 <span className="text-[10px] text-gray-400 uppercase tracking-widest leading-none">Developer</span>
               </div>
               <Link to="/dashboard" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</Link>
+              <Link to="/profile" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Profile</Link>
               <button 
                 onClick={handleLogout}
                 className="px-5 py-2 bg-gray-800 hover:bg-red-500/20 hover:text-red-500 border border-gray-700 hover:border-red-500/50 rounded-xl text-sm font-semibold transition-all"
