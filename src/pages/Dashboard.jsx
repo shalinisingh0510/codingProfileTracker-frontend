@@ -29,7 +29,7 @@ ChartJS.register(
   Filler
 );
 
-const PlatformSection = ({ name, data, color, icon }) => {
+const PlatformSection = ({ name, data, color, icon, labels = {} }) => {
   if (!data || data.error) {
     return (
       <div className="bg-gray-800/50 p-8 rounded-3xl border border-gray-700/50 text-center mb-8">
@@ -40,6 +40,16 @@ const PlatformSection = ({ name, data, color, icon }) => {
       </div>
     );
   }
+
+  const defaultLabels = {
+    total: 'Total Solved',
+    recent: 'Solved (2024)',
+    rating: 'Current Rating',
+    max: 'Max Rating',
+    extra: 'Contests'
+  };
+
+  const currentLabels = { ...defaultLabels, ...labels };
 
   // Rating Graph Data
   const ratingChartData = {
@@ -62,13 +72,14 @@ const PlatformSection = ({ name, data, color, icon }) => {
 
   // Solving Graph Data
   const solvedChartData = {
-    labels: data.solvedGraph?.map(g => g.date) || [],
+    labels: data.solvedGraph?.map(g => g.date) || data.contributionGraph?.map(g => g.date) || [],
     datasets: [
       {
-        label: 'Problems Solved',
-        data: data.solvedGraph?.map(g => g.count) || [],
+        label: name === 'GitHub' ? 'Contributions' : 'Problems Solved',
+        data: data.solvedGraph?.map(g => g.count) || data.contributionGraph?.map(g => g.count) || [],
         backgroundColor: color.replace('text-', '').includes('yellow') ? 'rgba(245, 158, 11, 0.8)' : 
                         color.replace('text-', '').includes('green') ? 'rgba(34, 197, 94, 0.8)' : 
+                        color.replace('text-', '').includes('indigo') ? 'rgba(99, 102, 241, 0.8)' :
                         'rgba(239, 68, 68, 0.8)',
         borderRadius: 6,
       },
@@ -113,8 +124,8 @@ const PlatformSection = ({ name, data, color, icon }) => {
         
         <div className="flex gap-3">
            <div className="bg-gray-900/80 px-6 py-3 rounded-2xl border border-gray-800 text-center">
-             <span className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Current Rating</span>
-             <span className={`text-xl font-black ${color}`}>{data.rating || '---'}</span>
+             <span className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">{currentLabels.rating}</span>
+             <span className={`text-xl font-black ${color}`}>{data.rating || data.followers || '---'}</span>
            </div>
         </div>
       </div>
@@ -122,57 +133,34 @@ const PlatformSection = ({ name, data, color, icon }) => {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         <div className="bg-gray-900/60 p-6 rounded-3xl border border-gray-800/50 group hover:bg-gray-900 transition-colors">
-          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">Total Solved</span>
-          <span className="text-3xl font-black text-white group-hover:text-blue-400 transition-colors">{data.totalSolved || 0}</span>
+          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">{currentLabels.total}</span>
+          <span className="text-3xl font-black text-white group-hover:text-blue-400 transition-colors">{data.totalSolved || data.totalContributions || 0}</span>
         </div>
         <div className="bg-gray-900/60 p-6 rounded-3xl border border-gray-800/50 group hover:bg-gray-900 transition-colors">
-          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">Solved (2024)</span>
-          <span className="text-3xl font-black text-emerald-500">{data.solvedThisYear || 0}</span>
+          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">{currentLabels.recent}</span>
+          <span className="text-3xl font-black text-emerald-500">{data.solvedThisYear || data.contributionsLastYear || 0}</span>
         </div>
         <div className="bg-gray-900/60 p-6 rounded-3xl border border-gray-800/50 group hover:bg-gray-900 transition-colors">
-          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">Max Rating</span>
-          <span className="text-3xl font-black text-blue-500">{data.maxRating || '--'}</span>
+          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">{currentLabels.max}</span>
+          <span className="text-3xl font-black text-blue-500">{data.maxRating || data.publicRepos || '--'}</span>
         </div>
         <div className="bg-gray-900/60 p-6 rounded-3xl border border-gray-800/50 group hover:bg-gray-900 transition-colors">
-          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">Contests</span>
-          <span className="text-3xl font-black text-purple-500">{data.contestsParticipated || 0}</span>
+          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-2">{currentLabels.extra}</span>
+          <span className="text-3xl font-black text-purple-500">{data.contestsParticipated || data.totalPRs || 0}</span>
         </div>
       </div>
 
-      {/* Difficulty Breakdown - Special for LeetCode but visible if data exists */}
-      {(data.easySolved !== undefined || data.mediumSolved !== undefined || data.hardSolved !== undefined) && (
+      {/* Achievements - Special for GitHub */}
+      {data.achievements && data.achievements.length > 0 && (
         <div className="mb-10 bg-gray-900/30 p-8 rounded-[2rem] border border-gray-800">
-          <h4 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-6">Difficulty Breakdown</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-            <div className="relative h-4 bg-gray-800 rounded-full overflow-hidden md:col-span-2 flex">
-              <div 
-                className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
-                style={{ width: `${(data.easySolved / data.totalSolved) * 100}%` }}
-              />
-              <div 
-                className="h-full bg-yellow-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]" 
-                style={{ width: `${(data.mediumSolved / data.totalSolved) * 100}%` }}
-              />
-              <div 
-                className="h-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]" 
-                style={{ width: `${(data.hardSolved / data.totalSolved) * 100}%` }}
-              />
-            </div>
-            <div className="flex justify-between md:justify-end gap-6">
-              <div className="text-center">
-                <span className="text-emerald-500 font-black text-lg block">{data.easySolved || 0}</span>
-                <span className="text-[10px] text-gray-500 uppercase font-bold">Easy</span>
-              </div>
-              <div className="text-center">
-                <span className="text-yellow-500 font-black text-lg block">{data.mediumSolved || 0}</span>
-                <span className="text-[10px] text-gray-500 uppercase font-bold">Medium</span>
-              </div>
-              <div className="text-center">
-                <span className="text-red-500 font-black text-lg block">{data.hardSolved || 0}</span>
-                <span className="text-[10px] text-gray-500 uppercase font-bold">Hard</span>
-              </div>
-            </div>
-          </div>
+           <h4 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-6">Recent Achievements</h4>
+           <div className="flex flex-wrap gap-3">
+             {data.achievements.map((achievement, idx) => (
+               <div key={idx} className="bg-indigo-500/10 text-indigo-400 px-4 py-2 rounded-xl border border-indigo-500/20 text-xs font-bold transition-all hover:bg-indigo-500/20">
+                 ✨ {achievement}
+               </div>
+             ))}
+           </div>
         </div>
       )}
 
@@ -192,15 +180,17 @@ const PlatformSection = ({ name, data, color, icon }) => {
           </div>
         </div>
 
-        {/* Problem Solving Graph */}
+        {/* Problem Solving Graph / Activity Graph */}
         <div className="bg-gray-900/30 p-6 rounded-3xl border border-gray-800">
-          <h4 className="text-sm font-bold text-gray-400 mb-6 uppercase tracking-widest">Problem Solving Activity</h4>
+          <h4 className="text-sm font-bold text-gray-400 mb-6 uppercase tracking-widest">
+            {name === 'GitHub' ? 'Open Source Activity' : 'Problem Solving Activity'}
+          </h4>
           <div className="h-[250px]">
-             {data.solvedGraph && data.solvedGraph.length > 0 ? (
+             {(data.solvedGraph && data.solvedGraph.length > 0) || (data.contributionGraph && data.contributionGraph.length > 0) ? (
                <Bar data={solvedChartData} options={chartOptions} />
              ) : (
               <div className="h-full flex items-center justify-center text-gray-600 text-sm italic">
-                No solving activity data available.
+                No activity data available.
               </div>
              )}
           </div>
@@ -300,6 +290,20 @@ const Dashboard = () => {
             data={data?.platforms?.leetcode} 
             color="text-[#f59e0b]" 
             icon={<span className="text-2xl">⚡</span>} 
+          />
+
+          <PlatformSection 
+            name="GitHub" 
+            data={data?.platforms?.github} 
+            color="text-[#818cf8]" 
+            icon={<span className="text-2xl">🐙</span>} 
+            labels={{
+              total: 'Core Contributions',
+              recent: 'Annual Activity',
+              rating: 'Followers',
+              max: 'Repositories',
+              extra: 'Pull Requests'
+            }}
           />
           
           <PlatformSection 
