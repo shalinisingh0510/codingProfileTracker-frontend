@@ -189,6 +189,218 @@ const PlatformSection = ({ name, data, loading, color, icon, labels = {} }) => {
   );
 };
 
+// ─── GitHub Hero Card (Full-Width) ───────────────────────────────────────────
+const GitHubHeroCard = ({ data, loading }) => {
+  if (loading) {
+    return (
+      <div className="col-span-1 md:col-span-2 bg-[#0f172a]/30 p-8 md:p-10 rounded-[2rem] border border-gray-800 animate-pulse">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-14 h-14 bg-gray-900 rounded-2xl"></div>
+          <div className="space-y-2">
+            <div className="h-6 w-32 bg-gray-900 rounded-lg"></div>
+            <div className="h-2 w-20 bg-gray-900 rounded-lg"></div>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
+          {[1,2,3,4,5,6].map(i => (
+            <div key={i} className="bg-gray-900/40 p-4 rounded-2xl h-16"></div>
+          ))}
+        </div>
+        <div className="h-[160px] bg-gray-900/20 rounded-xl"></div>
+      </div>
+    );
+  }
+
+  if (!data || data.error) return null;
+
+  const contributionChartData = {
+    labels: data.contributionGraph?.map(g => g.date) || [],
+    datasets: [
+      {
+        label: 'Contributions',
+        data: data.contributionGraph?.map(g => g.count) || [],
+        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+        borderColor: 'rgba(99, 102, 241, 0.8)',
+        borderWidth: 1,
+        borderRadius: 3,
+        barPercentage: 0.9,
+        categoryPercentage: 0.95,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#0f172a',
+        padding: 12,
+        cornerRadius: 12,
+        displayColors: false,
+        callbacks: {
+          title: (ctx) => ctx[0]?.label || '',
+          label: (ctx) => `${ctx.raw} contributions`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { display: false } },
+      y: { grid: { color: 'rgba(51, 65, 85, 0.15)', drawBorder: false }, ticks: { color: '#475569', font: { size: 9 } }, beginAtZero: true }
+    }
+  };
+
+  const stats = [
+    { label: 'Total Contributions', value: data.totalContributions || 0, color: 'text-white' },
+    { label: 'This Year', value: data.contributionsLastYear || 0, color: 'text-emerald-400' },
+    { label: 'Repositories', value: data.publicRepos || 0, color: 'text-indigo-400' },
+    { label: 'Pull Requests', value: data.totalPRs || 0, color: 'text-cyan-400' },
+    { label: 'Issues', value: data.totalIssues || 0, color: 'text-amber-400' },
+    { label: 'Followers', value: data.followers || 0, color: 'text-pink-400' },
+  ];
+
+  return (
+    <div className="col-span-1 md:col-span-2 bg-[#0f172a]/30 p-8 md:p-10 rounded-[2rem] border border-indigo-500/20 transition-all hover:border-indigo-500/40 animate-in fade-in zoom-in-95 duration-500 relative overflow-hidden">
+      <div className="absolute -top-20 -right-20 w-72 h-72 bg-indigo-600/5 blur-[100px] rounded-full pointer-events-none"></div>
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
+            🐙
+          </div>
+          <div>
+            <h3 className="text-3xl font-black tracking-tighter text-indigo-400">GitHub</h3>
+            <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest">@{data.username || 'developer'}</p>
+          </div>
+        </div>
+        {data.bio && (
+          <p className="text-xs text-gray-500 italic max-w-md text-right hidden md:block">&ldquo;{data.bio}&rdquo;</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
+        {stats.map((stat, i) => (
+          <div key={i} className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30 text-center">
+            <span className="text-[7px] text-gray-500 uppercase font-black tracking-widest block mb-1">{stat.label}</span>
+            <span className={`text-xl font-black ${stat.color}`}>{stat.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {data.achievements?.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {data.achievements.map((ach, i) => (
+            <span key={i} className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[8px] font-black uppercase tracking-widest text-amber-400">
+              🏅 {ach}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="h-[160px] bg-gray-900/20 rounded-xl overflow-hidden p-3">
+        <Bar data={contributionChartData} options={chartOptions} />
+      </div>
+    </div>
+  );
+};
+
+// ─── HackerRank Card (Enhanced with Badges & Certs) ──────────────────────────
+const HackerRankCard = ({ data, loading }) => {
+  if (loading) {
+    return (
+      <div className="bg-[#0f172a]/30 p-6 md:p-8 rounded-[2rem] border border-gray-800 animate-pulse">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 bg-gray-900 rounded-2xl"></div>
+          <div className="space-y-2">
+            <div className="h-5 w-24 bg-gray-900 rounded-lg"></div>
+            <div className="h-2 w-16 bg-gray-900 rounded-lg"></div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {[1,2,3,4].map(i => <div key={i} className="bg-gray-900/40 p-4 rounded-2xl h-16"></div>)}
+        </div>
+        <div className="space-y-2">
+          {[1,2,3].map(i => <div key={i} className="h-8 bg-gray-900/40 rounded-xl"></div>)}
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.error) return null;
+
+  return (
+    <div className="bg-[#0f172a]/30 p-6 md:p-8 rounded-[2rem] border border-green-500/20 transition-all hover:border-green-500/40 animate-in fade-in zoom-in-95 duration-500">
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center text-xl shadow-inner border border-gray-800">
+            🏁
+          </div>
+          <div>
+            <h3 className="text-2xl font-black tracking-tighter text-green-400">HackerRank</h3>
+            <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest">{data.rating || 'Active Explorer'}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <span className="block text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Global Rank</span>
+          <span className="text-lg font-black text-green-400">{data.globalRank || '---'}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+          <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">Problems Solved</span>
+          <span className="text-xl font-black text-white">{data.totalSolved || 0}</span>
+        </div>
+        <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+          <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">Total Points</span>
+          <span className="text-xl font-black text-emerald-400">{data.totalPoints || 0}</span>
+        </div>
+        <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+          <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">Max Stars</span>
+          <span className="text-xl font-black text-amber-400">{data.prestige || 0}★</span>
+        </div>
+        <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+          <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">Badges Earned</span>
+          <span className="text-xl font-black text-indigo-400">{data.badges?.length || data.badgeNames?.length || 0}</span>
+        </div>
+      </div>
+
+      {(data.badges?.length > 0 || data.badgeNames?.length > 0) && (
+        <div className="mb-6">
+          <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-3">Skill Badges</h4>
+          <div className="flex flex-wrap gap-2">
+            {(data.badges || []).map((badge, i) => (
+              <span key={i} className="px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-xl text-[9px] font-bold text-green-400 flex items-center gap-1.5">
+                <span className="text-amber-400">{typeof badge === 'object' ? '★'.repeat(badge.stars || 1) : '★'}</span>
+                {typeof badge === 'object' ? badge.name : badge}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {data.certifications?.length > 0 && (
+        <div>
+          <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-3">Certifications</h4>
+          <div className="space-y-2">
+            {data.certifications.map((cert, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 bg-cyan-500/5 border border-cyan-500/10 rounded-xl">
+                <span className="text-cyan-400 text-sm">🎓</span>
+                <div>
+                  <span className="text-xs font-bold text-cyan-300 block">{cert.name}</span>
+                  {cert.level && <span className="text-[8px] text-gray-500 uppercase tracking-widest">{cert.level}</span>}
+                </div>
+                <span className="ml-auto text-[7px] font-black uppercase tracking-widest text-emerald-500">{cert.status || 'Verified'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [handles, setHandles] = useState({});
@@ -334,7 +546,15 @@ const Dashboard = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Cards pop in as they finish loading */}
+              {/* GitHub Hero Card - Full Width at the top */}
+              {handles.github && (
+                <GitHubHeroCard 
+                  data={platforms.github} 
+                  loading={platformLoading.github} 
+                />
+              )}
+
+              {/* Regular Platform Cards */}
               {handles.leetcode && (
                 <PlatformSection 
                   name="LeetCode" 
@@ -343,16 +563,6 @@ const Dashboard = () => {
                   color="text-yellow-500" 
                   icon="⚡" 
                   labels={{ recent: 'Active Days', extra: 'Contests' }}
-                />
-              )}
-              {handles.github && (
-                <PlatformSection 
-                  name="GitHub" 
-                  data={platforms.github} 
-                  loading={platformLoading.github} 
-                  color="text-indigo-400" 
-                  icon="🐙" 
-                  labels={{ total: 'Contributions', recent: 'Annual Activity', rating: 'Followers', max: 'Repositories', extra: 'Total PRs' }}
                 />
               )}
               {handles.codeforces && (
@@ -385,16 +595,15 @@ const Dashboard = () => {
                   labels={{ recent: 'Stars', rating: 'Rating', max: 'Max Stars', extra: 'Country Rank' }}
                 />
               )}
+
+              {/* HackerRank - Enhanced Card with Badges & Certs */}
               {handles.hackerrank && (
-                <PlatformSection 
-                  name="HackerRank" 
+                <HackerRankCard 
                   data={platforms.hackerrank} 
                   loading={platformLoading.hackerrank} 
-                  color="text-green-400" 
-                  icon="🏁" 
-                  labels={{ recent: 'Badges', rating: 'Legacy Score', max: 'Prestige', extra: 'Solved' }}
                 />
               )}
+
               {handles.hackerearth && (
                 <PlatformSection 
                   name="HackerEarth" 
