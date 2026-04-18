@@ -29,6 +29,16 @@ export const register = async (userData) => {
   return response.data;
 };
 
+export const forgotPassword = async (email) => {
+  const response = await api.post('/auth/forgot-password', { email });
+  return response.data;
+};
+
+export const resetPassword = async ({ email, code, newPassword }) => {
+  const response = await api.post('/auth/reset-password', { email, code, newPassword });
+  return response.data;
+};
+
 // Dashboard Services
 export const getDashboardData = async () => {
   const response = await api.get('/dashboard');
