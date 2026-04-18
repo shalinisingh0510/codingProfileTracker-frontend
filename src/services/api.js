@@ -35,7 +35,12 @@ export const getDashboardData = async () => {
   return response.data;
 };
 
-// Platform Specific Services (Optional but good for scalability)
+export const getUserInfo = async () => {
+  const response = await api.get('/dashboard/user');
+  return response.data;
+};
+
+// Platform Specific Services
 export const getLeetCodeProfile = async (username) => {
   const response = await api.get(`/leetcode/${username}`);
   return response.data;
@@ -48,6 +53,26 @@ export const getCodeforcesProfile = async (handle) => {
 
 export const getGfgProfile = async (username) => {
   const response = await api.get(`/gfg/${username}`);
+  return response.data;
+};
+
+export const getGithubProfile = async (username) => {
+  const response = await api.get(`/github/${username}`);
+  return response.data;
+};
+
+export const getCodechefProfile = async (username) => {
+  const response = await api.get(`/codechef/${username}`);
+  return response.data;
+};
+
+export const getHackerrankProfile = async (username) => {
+  const response = await api.get(`/hackerrank/${username}`);
+  return response.data;
+};
+
+export const getHackerearthProfile = async (username) => {
+  const response = await api.get(`/hackerearth/${username}`);
   return response.data;
 };
 

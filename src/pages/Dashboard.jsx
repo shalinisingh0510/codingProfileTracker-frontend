@@ -1,6 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDashboardData } from '../services/api';
+import { 
+  getUserInfo, 
+  getLeetCodeProfile, 
+  getCodeforcesProfile, 
+  getGfgProfile,
+  getGithubProfile,
+  getCodechefProfile,
+  getHackerrankProfile,
+  getHackerearthProfile
+} from '../services/api';
 import AdBanner from '../components/AdBanner';
 import ResourceHub from '../components/ResourceHub';
 import {
@@ -31,7 +40,26 @@ ChartJS.register(
   Filler
 );
 
-const PlatformSection = ({ name, data, color, icon, labels = {} }) => {
+const PlatformSection = ({ name, data, loading, color, icon, labels = {} }) => {
+  if (loading) {
+    return (
+      <div className="bg-[#0f172a]/30 p-6 md:p-8 rounded-[2rem] border border-gray-800 animate-pulse h-[340px] flex flex-col justify-center gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gray-800 rounded-2xl"></div>
+          <div className="space-y-2">
+            <div className="h-4 w-24 bg-gray-800 rounded"></div>
+            <div className="h-2 w-16 bg-gray-800 rounded"></div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-16 bg-gray-800 rounded-2xl"></div>
+          <div className="h-16 bg-gray-800 rounded-2xl"></div>
+        </div>
+        <div className="h-24 bg-gray-800 rounded-2xl"></div>
+      </div>
+    );
+  }
+
   if (!data || data.error) return null;
 
   const defaultLabels = {
@@ -136,32 +164,66 @@ const PlatformSection = ({ name, data, color, icon, labels = {} }) => {
 };
 
 const Dashboard = () => {
-  const [data, setData] = useState(null);
+  const [user, setUser] = useState(null);
+  const [platforms, setPlatforms] = useState({});
+  const [platformLoading, setPlatformLoading] = useState({});
+  const [totalSolved, setTotalSolved] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const fetchPlatformData = useCallback(async (platformName, handle, fetchFn) => {
+    if (!handle) return;
+    
+    setPlatformLoading(prev => ({ ...prev, [platformName]: true }));
+    try {
+      const data = await fetchFn(handle);
+      setPlatforms(prev => ({ ...prev, [platformName]: data }));
+      
+      // Update total solved as data arrives
+      const solvedCount = data.totalSolved || data.totalContributions || 0;
+      if (solvedCount > 0) {
+        setTotalSolved(prev => prev + solvedCount);
+      }
+    } catch (err) {
+      console.error(`Error fetching ${platformName}:`, err);
+      setPlatforms(prev => ({ ...prev, [platformName]: { error: true } }));
+    } finally {
+      setPlatformLoading(prev => ({ ...prev, [platformName]: false }));
+    }
+  }, []);
+
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const initializeDashboard = async () => {
       try {
-        const dashboardData = await getDashboardData();
-        setData(dashboardData);
+        const userInfo = await getUserInfo();
+        setUser(userInfo.user);
+        setLoading(false); // Clear global loader once we have basic user info
+
+        // Trigger platform fetches in parallel
+        const { handles } = userInfo;
+        if (handles.leetcode) fetchPlatformData('leetcode', handles.leetcode, getLeetCodeProfile);
+        if (handles.codeforces) fetchPlatformData('codeforces', handles.codeforces, getCodeforcesProfile);
+        if (handles.gfg) fetchPlatformData('gfg', handles.gfg, getGfgProfile);
+        if (handles.github) fetchPlatformData('github', handles.github, getGithubProfile);
+        if (handles.codechef) fetchPlatformData('codechef', handles.codechef, getCodechefProfile);
+        if (handles.hackerrank) fetchPlatformData('hackerrank', handles.hackerrank, getHackerrankProfile);
+        if (handles.hackerearth) fetchPlatformData('hackerearth', handles.hackerearth, getHackerearthProfile);
+
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           navigate('/login');
         }
-      } finally {
-        setLoading(false);
       }
     };
 
     if (!localStorage.getItem('token')) {
       navigate('/login');
     } else {
-      fetchDashboardData();
+      initializeDashboard();
     }
-  }, [navigate]);
+  }, [navigate, fetchPlatformData]);
 
   if (loading) {
     return (
@@ -185,23 +247,23 @@ const Dashboard = () => {
           <div className="absolute -top-32 -left-32 w-96 h-96 bg-cyan-500/5 blur-[120px] rounded-full pointer-events-none"></div>
           
           <div className="relative z-10 flex items-center gap-8">
-            {data?.user?.profilePic ? (
-              <img src={data.user.profilePic} alt="Profile" className="w-28 h-28 rounded-[2.5rem] border-2 border-cyan-500/30 p-1.5 object-cover shadow-2xl" />
+            {user?.profilePic ? (
+              <img src={user.profilePic} alt="Profile" className="w-28 h-28 rounded-[2.5rem] border-2 border-cyan-500/30 p-1.5 object-cover shadow-2xl" />
             ) : (
               <div className="w-28 h-28 rounded-[2.5rem] bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-5xl font-black text-white shadow-2xl">
-                {data?.user?.name?.[0]}
+                {user?.name?.[0]}
               </div>
             )}
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <span className="h-px w-8 bg-cyan-400"></span>
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400">{data?.user?.collegeName || 'Senior Architect'}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400">{user?.collegeName || 'Senior Architect'}</span>
               </div>
               <h1 className="text-6xl md:text-7xl font-black tracking-tighter text-white leading-tight">
-                {data?.user?.name || 'Developer'}<span className="text-cyan-400">.</span>
+                {user?.name || 'Developer'}<span className="text-cyan-400">.</span>
               </h1>
               <div className="flex flex-wrap gap-2 mt-4">
-                {data?.user?.skills?.map((skill, idx) => (
+                {user?.skills?.map((skill, idx) => (
                   <span key={idx} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-black uppercase tracking-widest text-gray-400">
                     {skill}
                   </span>
@@ -212,11 +274,11 @@ const Dashboard = () => {
 
           <div className="flex bg-[#0f172a]/40 backdrop-blur-2xl p-10 rounded-[2.5rem] border border-gray-800 shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
              <div className="text-center px-8 border-r border-gray-800">
-               <span className="block text-5xl font-black text-white mb-2">{data?.totalSolved || 0}</span>
-               <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Solved</span>
+               <span className="block text-5xl font-black text-white mb-2">{totalSolved || 0}</span>
+               <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Aggregate Solved</span>
              </div>
              <div className="text-center px-8">
-               <span className="block text-5xl font-black text-cyan-400 mb-2">{data?.averageProblemsPerDay || 0}</span>
+               <span className="block text-5xl font-black text-cyan-400 mb-2">{parseFloat((totalSolved / 365).toFixed(2))}</span>
                <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest whitespace-nowrap">Daily Velocity</span>
              </div>
           </div>
@@ -224,28 +286,37 @@ const Dashboard = () => {
 
         {/* Primary Dashboard Grid */}
         <div className="grid grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* Main Content Area - Platforms */}
           <div className="col-span-12 lg:col-span-8 space-y-8">
             <h2 className="text-xs font-black uppercase tracking-[0.5em] text-gray-600 mb-8 border-b border-gray-800 pb-4 flex items-center gap-4">
                Synced Platform Identities <span className="h-px flex-grow bg-gray-800"></span>
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {data?.platforms?.leetcode && !data.platforms.leetcode.error && (
-                <PlatformSection name="LeetCode" data={data.platforms.leetcode} color="text-yellow-500" icon="⚡" />
+              {/* Cards pop in as they finish loading */}
+              {user?.handles?.leetcode && (
+                <PlatformSection name="LeetCode" data={platforms.leetcode} loading={platformLoading.leetcode} color="text-yellow-500" icon="⚡" />
               )}
-              {data?.platforms?.github && !data.platforms.github.error && (
-                <PlatformSection name="GitHub" data={data.platforms.github} color="text-indigo-400" icon="🐙" />
+              {user?.handles?.github && (
+                <PlatformSection name="GitHub" data={platforms.github} loading={platformLoading.github} color="text-indigo-400" icon="🐙" />
               )}
-              {data?.platforms?.codeforces && !data.platforms.codeforces.error && (
-                <PlatformSection name="Codeforces" data={data.platforms.codeforces} color="text-red-500" icon="🏆" />
+              {user?.handles?.codeforces && (
+                <PlatformSection name="Codeforces" data={platforms.codeforces} loading={platformLoading.codeforces} color="text-red-500" icon="🏆" />
               )}
-              {data?.platforms?.gfg && !data.platforms.gfg.error && (
-                <PlatformSection name="GfG" data={data.platforms.gfg} color="text-emerald-500" icon="🌳" />
+              {user?.handles?.gfg && (
+                <PlatformSection name="GfG" data={platforms.gfg} loading={platformLoading.gfg} color="text-emerald-500" icon="🌳" />
+              )}
+              {user?.handles?.codechef && (
+                <PlatformSection name="CodeChef" data={platforms.codechef} loading={platformLoading.codechef} color="text-yellow-600" icon="👨‍🍳" />
+              )}
+              {user?.handles?.hackerrank && (
+                <PlatformSection name="HackerRank" data={platforms.hackerrank} loading={platformLoading.hackerrank} color="text-green-400" icon="🏁" />
+              )}
+              {user?.handles?.hackerearth && (
+                <PlatformSection name="HackerEarth" data={platforms.hackerearth} loading={platformLoading.hackerearth} color="text-blue-400" icon="🌏" />
               )}
             </div>
 
-            {Object.values(data?.platforms || {}).every(p => !p || p.error) && (
+            {Object.values(user?.handles || {}).every(h => !h) && (
               <div className="text-center py-20 bg-gray-900/20 rounded-[3rem] border border-dashed border-gray-800">
                 <p className="text-gray-500 font-medium mb-6 italic">No platform handles configured.</p>
                 <button onClick={() => navigate('/profile')} className="px-8 py-3 bg-cyan-500 text-black font-black rounded-2xl transition-all">Setup Profiles</button>
@@ -253,7 +324,7 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Sidebar Area - Ads & Extras */}
+          {/* Sidebar Area */}
           <div className="col-span-12 lg:col-span-4 sticky top-32 space-y-8">
             <h2 className="text-xs font-black uppercase tracking-[0.5em] text-gray-600 mb-8 pb-4 border-b border-gray-800">Intelligence Sidebar</h2>
             <AdBanner />
@@ -276,10 +347,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Global Resource Hub */}
         <ResourceHub />
 
-        {/* Refined Footer */}
         <div className="mt-40 pt-12 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-8 opacity-50">
            <p className="text-[9px] font-black uppercase tracking-[0.6em] text-gray-500">
              © 2026 CodeProfile Command Center . v3.0 Release
