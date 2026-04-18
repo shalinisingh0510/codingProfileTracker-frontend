@@ -43,19 +43,37 @@ ChartJS.register(
 const PlatformSection = ({ name, data, loading, color, icon, labels = {} }) => {
   if (loading) {
     return (
-      <div className="bg-[#0f172a]/30 p-6 md:p-8 rounded-[2rem] border border-gray-800 animate-pulse h-[340px] flex flex-col justify-center gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gray-800 rounded-2xl"></div>
-          <div className="space-y-2">
-            <div className="h-4 w-24 bg-gray-800 rounded"></div>
-            <div className="h-2 w-16 bg-gray-800 rounded"></div>
+      <div className="bg-[#0f172a]/30 p-6 md:p-8 rounded-[2rem] border border-gray-800 animate-pulse transition-all">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gray-900 rounded-2xl"></div>
+            <div className="space-y-2">
+              <div className="h-5 w-24 bg-gray-900 rounded-lg"></div>
+              <div className="h-2 w-16 bg-gray-900 rounded-lg"></div>
+            </div>
+          </div>
+          <div className="text-right space-y-2">
+            <div className="h-2 w-12 bg-gray-900 rounded-lg ml-auto"></div>
+            <div className="h-5 w-16 bg-gray-900 rounded-lg"></div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="h-16 bg-gray-800 rounded-2xl"></div>
-          <div className="h-16 bg-gray-800 rounded-2xl"></div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30 h-16">
+              <div className="h-1.5 w-10 bg-gray-900 rounded mb-2"></div>
+              <div className="h-4 w-14 bg-gray-900 rounded"></div>
+            </div>
+          ))}
         </div>
-        <div className="h-24 bg-gray-800 rounded-2xl"></div>
+
+        {/* Graph Skeleton */}
+        <div className="grid grid-cols-2 gap-4 h-[120px]">
+          <div className="bg-gray-900/20 rounded-xl"></div>
+          <div className="bg-gray-900/20 rounded-xl"></div>
+        </div>
       </div>
     );
   }
@@ -123,7 +141,7 @@ const PlatformSection = ({ name, data, loading, color, icon, labels = {} }) => {
   };
 
   return (
-    <div className="bg-[#0f172a]/30 p-6 md:p-8 rounded-[2rem] border border-gray-800 transition-all hover:bg-[#0f172a]/40 hover:border-gray-700/50">
+    <div className="bg-[#0f172a]/30 p-6 md:p-8 rounded-[2rem] border border-gray-800 transition-all hover:bg-[#0f172a]/40 hover:border-gray-700/50 animate-in fade-in zoom-in-95 duration-500">
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center text-xl shadow-inner border border-gray-800">
@@ -147,7 +165,15 @@ const PlatformSection = ({ name, data, loading, color, icon, labels = {} }) => {
         </div>
         <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
           <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">{currentLabels.recent}</span>
-          <span className="text-xl font-black text-emerald-400">{data.solvedThisYear || data.contributionsLastYear || 0}</span>
+          <span className="text-xl font-black text-emerald-400">{data.solvedThisYear || data.contributionsLastYear || data.badges?.length || data.problemsSolved || 0}</span>
+        </div>
+        <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+          <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">{currentLabels.max}</span>
+          <span className="text-xl font-black text-gray-300">{data.maxRating || data.publicRepos || data.totalPoints || data.prestige || '---'}</span>
+        </div>
+        <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+          <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">{currentLabels.extra}</span>
+          <span className="text-xl font-black text-indigo-400">{data.contestsAttended || data.totalPRs || data.globalRank || data.solvedCount || '---'}</span>
         </div>
       </div>
 
@@ -294,25 +320,74 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Cards pop in as they finish loading */}
               {user?.handles?.leetcode && (
-                <PlatformSection name="LeetCode" data={platforms.leetcode} loading={platformLoading.leetcode} color="text-yellow-500" icon="⚡" />
+                <PlatformSection 
+                  name="LeetCode" 
+                  data={platforms.leetcode} 
+                  loading={platformLoading.leetcode} 
+                  color="text-yellow-500" 
+                  icon="⚡" 
+                  labels={{ recent: 'Active Days', extra: 'Contests' }}
+                />
               )}
               {user?.handles?.github && (
-                <PlatformSection name="GitHub" data={platforms.github} loading={platformLoading.github} color="text-indigo-400" icon="🐙" />
+                <PlatformSection 
+                  name="GitHub" 
+                  data={platforms.github} 
+                  loading={platformLoading.github} 
+                  color="text-indigo-400" 
+                  icon="🐙" 
+                  labels={{ total: 'Contributions', recent: 'Annual Activity', rating: 'Followers', max: 'Repositories', extra: 'Total PRs' }}
+                />
               )}
               {user?.handles?.codeforces && (
-                <PlatformSection name="Codeforces" data={platforms.codeforces} loading={platformLoading.codeforces} color="text-red-500" icon="🏆" />
+                <PlatformSection 
+                  name="Codeforces" 
+                  data={platforms.codeforces} 
+                  loading={platformLoading.codeforces} 
+                  color="text-red-500" 
+                  icon="🏆" 
+                  labels={{ rating: 'Current Rating', max: 'Max Rating', extra: 'Contests' }}
+                />
               )}
               {user?.handles?.gfg && (
-                <PlatformSection name="GfG" data={platforms.gfg} loading={platformLoading.gfg} color="text-emerald-500" icon="🌳" />
+                <PlatformSection 
+                  name="GfG" 
+                  data={platforms.gfg} 
+                  loading={platformLoading.gfg} 
+                  color="text-emerald-500" 
+                  icon="🌳" 
+                  labels={{ recent: 'Score', extra: 'Global Rank' }}
+                />
               )}
               {user?.handles?.codechef && (
-                <PlatformSection name="CodeChef" data={platforms.codechef} loading={platformLoading.codechef} color="text-yellow-600" icon="👨‍🍳" />
+                <PlatformSection 
+                  name="CodeChef" 
+                  data={platforms.codechef} 
+                  loading={platformLoading.codechef} 
+                  color="text-yellow-600" 
+                  icon="👨‍🍳" 
+                  labels={{ recent: 'Stars', rating: 'Rating', max: 'Max Stars', extra: 'Country Rank' }}
+                />
               )}
               {user?.handles?.hackerrank && (
-                <PlatformSection name="HackerRank" data={platforms.hackerrank} loading={platformLoading.hackerrank} color="text-green-400" icon="🏁" />
+                <PlatformSection 
+                  name="HackerRank" 
+                  data={platforms.hackerrank} 
+                  loading={platformLoading.hackerrank} 
+                  color="text-green-400" 
+                  icon="🏁" 
+                  labels={{ recent: 'Badges', rating: 'Legacy Score', max: 'Prestige', extra: 'Solved' }}
+                />
               )}
               {user?.handles?.hackerearth && (
-                <PlatformSection name="HackerEarth" data={platforms.hackerearth} loading={platformLoading.hackerearth} color="text-blue-400" icon="🌏" />
+                <PlatformSection 
+                  name="HackerEarth" 
+                  data={platforms.hackerearth} 
+                  loading={platformLoading.hackerearth} 
+                  color="text-blue-400" 
+                  icon="🌏" 
+                  labels={{ recent: 'Checkins', rating: 'Contest Rating', max: 'Points', extra: 'Solved' }}
+                />
               )}
             </div>
 
