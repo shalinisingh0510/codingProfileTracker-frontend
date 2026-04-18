@@ -1,63 +1,29 @@
-import React, { useState } from 'react';
-
-const resources = [
-  {
-    id: 1,
-    title: "Striver's A2Z DSA Sheet",
-    category: "DSA",
-    description: "The ultimate roadmap to master Data Structures and Algorithms from scratch.",
-    icon: "📚",
-    tags: ["Best Seller", "Placement"]
-  },
-  {
-    id: 2,
-    title: "System Design Blueprints",
-    category: "System Design",
-    description: "visual guide to HLD and LLD patterns used in scalable microservices.",
-    icon: "🗺️",
-    tags: ["High Level", "Scalability"]
-  },
-  {
-    id: 3,
-    title: "Elite Resume Templates",
-    category: "Resume",
-    description: "ATS-friendly templates designed to get you noticed by top-tier tech recruiters.",
-    icon: "📄",
-    tags: ["Career", "Templates"]
-  },
-  {
-    id: 4,
-    title: "Low Level Design (LLD)",
-    category: "System Design",
-    description: "Master SOLID principles and Design Patterns with real-world coding examples.",
-    icon: "🛠️",
-    tags: ["Coding", "OOP"]
-  },
-  {
-    id: 5,
-    title: "Dynamic Programming Patterns",
-    category: "DSA",
-    description: "Learn to identify and solve DP problems using 7 distinct mental models.",
-    icon: "💎",
-    tags: ["Logic", "Patterns"]
-  },
-  {
-    id: 6,
-    title: "Power Words for Bullet Points",
-    category: "Resume",
-    description: "A comprehensive list of action verbs to make your achievements stand out.",
-    icon: "🔥",
-    tags: ["Writing", "Impact"]
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { getResources } from '../services/api';
 
 const ResourceHub = () => {
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [selectedResource, setSelectedResource] = useState(null);
+  
   const categories = ['All', 'DSA', 'System Design', 'Resume', 'General'];
 
-  const filteredResources = activeCategory === 'All' 
-    ? resources 
-    : resources.filter(r => r.category === activeCategory);
+  useEffect(() => {
+    fetchResources();
+  }, [activeCategory]);
+
+  const fetchResources = async () => {
+    setLoading(true);
+    try {
+      const data = await getResources(activeCategory);
+      setResources(data);
+    } catch (error) {
+      console.error('Error fetching resources:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="mt-32 space-y-12">
@@ -72,7 +38,7 @@ const ResourceHub = () => {
           </h2>
         </div>
 
-        <div className="flex flex-wrap gap-2 p-1.5 bg-[#0f172a]/40 backdrop-blur-xl border border-gray-800 rounded-2xl overflow-x-auto">
+        <div className="flex flex-wrap gap-2 p-1.5 bg-[#0f172a]/20 backdrop-blur-3xl border border-white/5 rounded-2xl overflow-x-auto">
           {categories.map(cat => (
             <button
               key={cat}
@@ -89,38 +55,97 @@ const ResourceHub = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResources.map(resource => (
-          <div 
-            key={resource.id} 
-            className="group relative bg-[#0f172a]/30 border border-gray-800 rounded-[2rem] p-8 transition-all hover:bg-[#0f172a]/50 hover:border-cyan-500/30 hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-5 duration-500"
-          >
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-14 h-14 bg-[#060e20] rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
-                {resource.icon}
+      {loading ? (
+        <div className="flex justify-center py-20">
+           <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {resources.length > 0 ? resources.map(resource => (
+            <div 
+              key={resource._id} 
+              className="group relative bg-[#0f172a]/30 border border-gray-800 rounded-[2rem] p-8 transition-all hover:bg-[#0f172a]/50 hover:border-cyan-500/30 hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-5 duration-500"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div className="w-14 h-14 bg-[#060e20] rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
+                  {resource.category === 'DSA' ? '📚' : resource.category === 'System Design' ? '🗺️' : resource.category === 'Resume' ? '📄' : '💎'}
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  {resource.tags?.map(tag => (
+                    <span key={tag} className="text-[8px] font-black uppercase tracking-widest text-cyan-500/60 leading-none">
+                      • {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                {resource.tags.map(tag => (
-                  <span key={tag} className="text-[8px] font-black uppercase tracking-widest text-cyan-500/60 leading-none">
-                    • {tag}
-                  </span>
-                ))}
+
+              <h3 className="text-xl font-black text-white mb-3 group-hover:text-cyan-400 transition-colors tracking-tight">
+                {resource.title}
+              </h3>
+              <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
+                {resource.description}
+              </p>
+
+              <button 
+                onClick={() => setSelectedResource(resource)}
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 group-hover:gap-4 transition-all"
+              >
+                Launch Module <span>→</span>
+              </button>
+            </div>
+          )) : (
+            <div className="col-span-full text-center py-20 bg-gray-900/10 rounded-[2rem] border border-dashed border-gray-800">
+               <p className="text-gray-600 font-medium italic">No materials found in this category.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Resource Viewer Modal */}
+      {selectedResource && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#0b1121] border border-gray-800 rounded-[3rem] w-full max-w-5xl p-8 md:p-16 relative animate-in zoom-in-95 duration-300 my-10 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button 
+              onClick={() => setSelectedResource(null)}
+              className="absolute top-10 right-10 text-gray-500 hover:text-white transition-colors text-3xl"
+            >
+              ✕
+            </button>
+
+            <div className="mb-12">
+              <span className="px-4 py-1.5 bg-cyan-500/10 text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-cyan-500/20 mb-6 inline-block">
+                {selectedResource.category}
+              </span>
+              <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter mb-4">
+                {selectedResource.title}
+              </h2>
+              <div className="flex items-center gap-4 text-xs text-gray-500 font-bold">
+                <span>By {selectedResource.author?.name || 'Admin'}</span>
+                <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
+                <span>{new Date(selectedResource.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
 
-            <h3 className="text-xl font-black text-white mb-3 group-hover:text-cyan-400 transition-colors tracking-tight">
-              {resource.title}
-            </h3>
-            <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-grow">
-              {resource.description}
-            </p>
+            <div 
+              className="prose prose-invert prose-cyan max-w-none text-gray-300 leading-loose text-lg"
+              dangerouslySetInnerHTML={{ __html: selectedResource.content }}
+            />
 
-            <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 group-hover:gap-4 transition-all">
-              Launch Module <span>→</span>
-            </button>
+            {selectedResource.link && (
+              <div className="mt-16 pt-10 border-t border-gray-800">
+                <a 
+                  href={selectedResource.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all"
+                >
+                   External Material Source ↗
+                </a>
+              </div>
+            )}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

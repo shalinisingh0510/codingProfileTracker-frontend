@@ -32,6 +32,9 @@ const Navbar = () => {
                 <span className="text-[10px] text-gray-400 uppercase tracking-widest leading-none">Developer</span>
               </div>
               <Link to="/dashboard" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</Link>
+              {user?.isAdmin && (
+                <Link to="/admin-dashboard" className="text-sm font-black text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-widest">Admin</Link>
+              )}
               <Link to="/profile" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Profile</Link>
               <button 
                 onClick={handleLogout}
