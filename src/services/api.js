@@ -108,4 +108,20 @@ export const deleteResource = async (id) => {
   return response.data;
 };
 
+// User Search & Public Profile Services
+export const searchUsers = async (query) => {
+  const response = await api.get('/users/search', { params: { q: query } });
+  return response.data;
+};
+
+export const getPublicProfile = async (username) => {
+  const response = await api.get(`/users/${username}`);
+  return response.data;
+};
+
+export const checkUsername = async (username) => {
+  const response = await api.get(`/users/check-username/${username}`);
+  return response.data;
+};
+
 export default api;

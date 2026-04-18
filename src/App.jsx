@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import PublicDashboard from './pages/PublicDashboard';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -31,6 +32,18 @@ function App() {
               <Profile />
             </ProtectedRoute>
           } 
+        />
+        <Route 
+          path="/:username/profile" 
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/:username/dashboard" 
+          element={<PublicDashboard />} 
         />
         <Route 
           path="/admin-dashboard" 
