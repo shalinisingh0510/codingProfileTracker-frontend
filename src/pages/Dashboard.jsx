@@ -191,6 +191,7 @@ const PlatformSection = ({ name, data, loading, color, icon, labels = {} }) => {
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
+  const [handles, setHandles] = useState({});
   const [platforms, setPlatforms] = useState({});
   const [platformLoading, setPlatformLoading] = useState({});
   const [totalSolved, setTotalSolved] = useState(0);
@@ -200,7 +201,6 @@ const Dashboard = () => {
   const fetchPlatformData = useCallback(async (platformName, handle, fetchFn) => {
     if (!handle) return;
     
-    setPlatformLoading(prev => ({ ...prev, [platformName]: true }));
     try {
       const data = await fetchFn(handle);
       setPlatforms(prev => ({ ...prev, [platformName]: data }));
@@ -222,18 +222,34 @@ const Dashboard = () => {
     const initializeDashboard = async () => {
       try {
         const userInfo = await getUserInfo();
-        setUser(userInfo.user);
-        setLoading(false); // Clear global loader once we have basic user info
+        const userHandles = userInfo.handles || {};
 
-        // Trigger platform fetches in parallel
-        const { handles } = userInfo;
-        if (handles.leetcode) fetchPlatformData('leetcode', handles.leetcode, getLeetCodeProfile);
-        if (handles.codeforces) fetchPlatformData('codeforces', handles.codeforces, getCodeforcesProfile);
-        if (handles.gfg) fetchPlatformData('gfg', handles.gfg, getGfgProfile);
-        if (handles.github) fetchPlatformData('github', handles.github, getGithubProfile);
-        if (handles.codechef) fetchPlatformData('codechef', handles.codechef, getCodechefProfile);
-        if (handles.hackerrank) fetchPlatformData('hackerrank', handles.hackerrank, getHackerrankProfile);
-        if (handles.hackerearth) fetchPlatformData('hackerearth', handles.hackerearth, getHackerearthProfile);
+        // Step 1: Pre-fill loading state for ALL active handles BEFORE clearing the global loader.
+        // This guarantees skeletons are visible on the very first render.
+        const initialLoadingState = {};
+        if (userHandles.leetcode) initialLoadingState.leetcode = true;
+        if (userHandles.codeforces) initialLoadingState.codeforces = true;
+        if (userHandles.gfg) initialLoadingState.gfg = true;
+        if (userHandles.github) initialLoadingState.github = true;
+        if (userHandles.codechef) initialLoadingState.codechef = true;
+        if (userHandles.hackerrank) initialLoadingState.hackerrank = true;
+        if (userHandles.hackerearth) initialLoadingState.hackerearth = true;
+
+        // Step 2: Set ALL state synchronously so React batches them into a single render.
+        setUser(userInfo.user);
+        setHandles(userHandles);
+        setPlatformLoading(initialLoadingState);
+        setLoading(false);
+
+        // Step 3: Fire off all platform fetches in parallel.
+        // Each will independently update `platforms` and clear its own loading flag.
+        if (userHandles.leetcode) fetchPlatformData('leetcode', userHandles.leetcode, getLeetCodeProfile);
+        if (userHandles.codeforces) fetchPlatformData('codeforces', userHandles.codeforces, getCodeforcesProfile);
+        if (userHandles.gfg) fetchPlatformData('gfg', userHandles.gfg, getGfgProfile);
+        if (userHandles.github) fetchPlatformData('github', userHandles.github, getGithubProfile);
+        if (userHandles.codechef) fetchPlatformData('codechef', userHandles.codechef, getCodechefProfile);
+        if (userHandles.hackerrank) fetchPlatformData('hackerrank', userHandles.hackerrank, getHackerrankProfile);
+        if (userHandles.hackerearth) fetchPlatformData('hackerearth', userHandles.hackerearth, getHackerearthProfile);
 
       } catch (err) {
         if (err.response?.status === 401) {
@@ -319,7 +335,7 @@ const Dashboard = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Cards pop in as they finish loading */}
-              {user?.handles?.leetcode && (
+              {handles.leetcode && (
                 <PlatformSection 
                   name="LeetCode" 
                   data={platforms.leetcode} 
@@ -329,7 +345,7 @@ const Dashboard = () => {
                   labels={{ recent: 'Active Days', extra: 'Contests' }}
                 />
               )}
-              {user?.handles?.github && (
+              {handles.github && (
                 <PlatformSection 
                   name="GitHub" 
                   data={platforms.github} 
@@ -339,7 +355,7 @@ const Dashboard = () => {
                   labels={{ total: 'Contributions', recent: 'Annual Activity', rating: 'Followers', max: 'Repositories', extra: 'Total PRs' }}
                 />
               )}
-              {user?.handles?.codeforces && (
+              {handles.codeforces && (
                 <PlatformSection 
                   name="Codeforces" 
                   data={platforms.codeforces} 
@@ -349,7 +365,7 @@ const Dashboard = () => {
                   labels={{ rating: 'Current Rating', max: 'Max Rating', extra: 'Contests' }}
                 />
               )}
-              {user?.handles?.gfg && (
+              {handles.gfg && (
                 <PlatformSection 
                   name="GfG" 
                   data={platforms.gfg} 
@@ -359,7 +375,7 @@ const Dashboard = () => {
                   labels={{ recent: 'Score', extra: 'Global Rank' }}
                 />
               )}
-              {user?.handles?.codechef && (
+              {handles.codechef && (
                 <PlatformSection 
                   name="CodeChef" 
                   data={platforms.codechef} 
@@ -369,7 +385,7 @@ const Dashboard = () => {
                   labels={{ recent: 'Stars', rating: 'Rating', max: 'Max Stars', extra: 'Country Rank' }}
                 />
               )}
-              {user?.handles?.hackerrank && (
+              {handles.hackerrank && (
                 <PlatformSection 
                   name="HackerRank" 
                   data={platforms.hackerrank} 
@@ -379,7 +395,7 @@ const Dashboard = () => {
                   labels={{ recent: 'Badges', rating: 'Legacy Score', max: 'Prestige', extra: 'Solved' }}
                 />
               )}
-              {user?.handles?.hackerearth && (
+              {handles.hackerearth && (
                 <PlatformSection 
                   name="HackerEarth" 
                   data={platforms.hackerearth} 
@@ -391,7 +407,8 @@ const Dashboard = () => {
               )}
             </div>
 
-            {Object.values(user?.handles || {}).every(h => !h) && (
+            {Object.values(handles).every(h => !h) && (
+
               <div className="text-center py-20 bg-gray-900/20 rounded-[3rem] border border-dashed border-gray-800">
                 <p className="text-gray-500 font-medium mb-6 italic">No platform handles configured.</p>
                 <button onClick={() => navigate('/profile')} className="px-8 py-3 bg-cyan-500 text-black font-black rounded-2xl transition-all">Setup Profiles</button>
