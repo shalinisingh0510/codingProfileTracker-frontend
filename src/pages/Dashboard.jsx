@@ -443,7 +443,8 @@ const Dashboard = () => {
       setAiReport(result.report);
     } catch (err) {
       console.error(err);
-      setAiReport("Failed to generate report. Please try again later.");
+      const backendMessage = err.response?.data?.message || err.message;
+      setAiReport(`**Error Analysis Profile:** \n\n${backendMessage}\n\n*Please check your backend logs or Render dashboard for more details.*`);
     } finally {
       setIsAnalyzing(false);
     }
