@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Markdown from 'react-markdown';
 import { 
   getUserInfo, 
   getLeetCodeProfile, 
@@ -8,7 +9,8 @@ import {
   getGithubProfile,
   getCodechefProfile,
   getHackerrankProfile,
-  getHackerearthProfile
+  getHackerearthProfile,
+  analyzeAIProfile
 } from '../services/api';
 import AdBanner from '../components/AdBanner';
 import ResourceHub from '../components/ResourceHub';
@@ -408,6 +410,9 @@ const Dashboard = () => {
   const [platformLoading, setPlatformLoading] = useState({});
   const [totalSolved, setTotalSolved] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiReport, setAiReport] = useState(null);
+  const [showAIModal, setShowAIModal] = useState(false);
   const navigate = useNavigate();
 
   const fetchPlatformData = useCallback(async (platformName, handle, fetchFn) => {
@@ -429,6 +434,20 @@ const Dashboard = () => {
       setPlatformLoading(prev => ({ ...prev, [platformName]: false }));
     }
   }, []);
+
+  const handleAnalyzeProfile = async () => {
+    setIsAnalyzing(true);
+    setShowAIModal(true);
+    try {
+      const result = await analyzeAIProfile();
+      setAiReport(result.report);
+    } catch (err) {
+      console.error(err);
+      setAiReport("Failed to generate report. Please try again later.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   useEffect(() => {
     const initializeDashboard = async () => {
@@ -628,6 +647,14 @@ const Dashboard = () => {
           {/* Sidebar Area */}
           <div className="col-span-12 lg:col-span-4 sticky top-32 space-y-8">
             <h2 className="text-xs font-black uppercase tracking-[0.5em] text-gray-600 mb-8 pb-4 border-b border-gray-800">Intelligence Sidebar</h2>
+            
+            <button 
+              onClick={handleAnalyzeProfile} 
+              className="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-black font-black uppercase tracking-widest text-xs py-4 rounded-2xl transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(6,182,212,0.4)] mb-8"
+            >
+              Analyze Profile with AI ✨
+            </button>
+            
             <AdBanner />
             
             <div className="p-8 bg-[#0f172a]/20 border border-gray-800 rounded-[2rem]">
@@ -649,6 +676,34 @@ const Dashboard = () => {
         </div>
 
         <ResourceHub />
+
+        {/* AI Report Modal */}
+        {showAIModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-[#0f172a] border border-cyan-500/30 rounded-3xl p-8 max-w-3xl w-full max-h-[80vh] overflow-y-auto shadow-[0_0_50px_rgba(6,182,212,0.15)] relative">
+              <button 
+                onClick={() => setShowAIModal(false)}
+                className="absolute top-6 right-6 text-gray-500 hover:text-white"
+              >
+                ✕
+              </button>
+              <h2 className="text-2xl font-black text-cyan-400 mb-6 flex items-center gap-3">
+                <span>🤖</span> AI Profile Analysis
+              </h2>
+              
+              {isAnalyzing ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-cyan-500 animate-pulse font-black uppercase tracking-widest text-xs">Analyzing Platforms...</p>
+                </div>
+              ) : (
+                <div className="prose-custom text-gray-300 text-sm leading-relaxed space-y-4 [&>h1]:text-2xl [&>h1]:font-black [&>h1]:text-white [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-cyan-400 [&>h3]:text-lg [&>h3]:font-bold [&>h3]:text-indigo-400 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>li]:mb-1 [&>p]:mb-4 [&>strong]:text-white">
+                  <Markdown>{aiReport}</Markdown>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="mt-40 pt-12 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-8 opacity-50">
            <p className="text-[9px] font-black uppercase tracking-[0.6em] text-gray-500">

@@ -134,4 +134,10 @@ export const checkUsername = async (username) => {
   return response.data;
 };
 
+// AI Services
+export const analyzeAIProfile = async () => {
+  const response = await api.get('/ai/analyze');
+  return response.data;
+};
+
 export default api;
