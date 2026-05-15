@@ -655,8 +655,77 @@ const Dashboard = () => {
             >
               Analyze Profile with AI ✨
             </button>
-            
-            <AdBanner />
+
+            {/* Dynamic Featured Insight Logic */}
+            {(() => {
+              let insight = {
+                title: "Master System Design\nLike a Pro.",
+                description: "Unlock the core architectural patterns used by big tech companies. From scalability to extreme performance.",
+                ctaText: "Explore Blueprints",
+                icon: "⚡"
+              };
+
+              if (isAnalyzing) {
+                insight = {
+                  title: "AI is Analyzing\nYour Potential...",
+                  description: "Our neural networks are currently processing your repository history and problem-solving patterns.",
+                  ctaText: "Awaiting Result",
+                  icon: "🧠",
+                  tag: "Processing"
+                };
+              } else if (aiReport && !aiReport.includes('Error')) {
+                insight = {
+                  title: "AI Technical\nAssessment Ready",
+                  description: "Your personalized career roadmap and technical skill-gap analysis have been generated.",
+                  ctaText: "Read AI Report",
+                  icon: "✨",
+                  tag: "AI Recommendation"
+                };
+              } else if (totalSolved > 0 && totalSolved < 50) {
+                insight = {
+                  title: "Kickstart Your\nDSA Journey",
+                  description: "You've started solving problems! Check out the Striver A-Z sheet in the Resource Hub.",
+                  ctaText: "Open Hub",
+                  icon: "📚",
+                  tag: "Newbie Tip"
+                };
+              } else if (totalSolved > 500) {
+                insight = {
+                  title: "Top 1% Global\nVelocity Detected",
+                  description: "Your consistent solving rate puts you in the elite bracket. Time to focus on System Design.",
+                  ctaText: "Advanced Track",
+                  icon: "🚀",
+                  tag: "Performance Alert"
+                };
+              } else if (handles.github && platforms.github?.totalContributions > 100) {
+                insight = {
+                  title: "Open Source\nImpact Rising",
+                  description: "Your GitHub activity shows strong development intent. Consider contributing to major frameworks.",
+                  ctaText: "View Repos",
+                  icon: "🐙",
+                  tag: "Dev Insight"
+                };
+              } else {
+                insight = {
+                  title: "Master System Design\nLike a Pro.",
+                  description: "Unlock the core architectural patterns used by big tech companies. From scalability to extreme performance.",
+                  ctaText: "Explore Blueprints",
+                  icon: "⚡",
+                  tag: "Featured Insight"
+                };
+              }
+
+              return (
+                <AdBanner 
+                  title={insight.title}
+                  description={insight.description}
+                  ctaText={insight.ctaText}
+                  icon={insight.icon}
+                  tag={insight.tag}
+                />
+              );
+            })()}
+
             
             <div className="p-8 bg-[#0f172a]/20 border border-gray-800 rounded-[2rem]">
                <h4 className="text-[10px] font-black uppercase tracking-widest text-cyan-400 mb-6">Current Streak Tips</h4>
