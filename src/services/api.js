@@ -98,10 +98,11 @@ export const updateUserProfile = async (profileData) => {
 };
 
 // Resource Services
-export const getResources = async (category = 'All') => {
-  const response = await api.get('/resources', { params: { category } });
+export const getResources = async (category = 'All', page = 1, limit = 9) => {
+  const response = await api.get('/resources', { params: { category, page, limit } });
   return response.data;
 };
+
 
 export const createResource = async (resourceData) => {
   const response = await api.post('/resources', resourceData);

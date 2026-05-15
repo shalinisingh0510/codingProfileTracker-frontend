@@ -6,18 +6,28 @@ const ResourceHub = () => {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedResource, setSelectedResource] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalResources, setTotalResources] = useState(0);
   
   const categories = ['All', 'DSA', 'System Design', 'Resume', 'General'];
 
   useEffect(() => {
     fetchResources();
-  }, [activeCategory]);
+  }, [activeCategory, currentPage]);
+
+  const handleCategoryChange = (cat) => {
+    setActiveCategory(cat);
+    setCurrentPage(1); // Reset to first page when category changes
+  };
 
   const fetchResources = async () => {
     setLoading(true);
     try {
-      const data = await getResources(activeCategory);
-      setResources(data);
+      const data = await getResources(activeCategory, currentPage, 9);
+      setResources(data.resources || []);
+      setTotalPages(data.pages || 1);
+      setTotalResources(data.total || 0);
     } catch (error) {
       console.error('Error fetching resources:', error);
     } finally {
@@ -42,7 +52,7 @@ const ResourceHub = () => {
           {categories.map(cat => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => handleCategoryChange(cat)}
               className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                 activeCategory === cat 
                 ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20' 
@@ -60,46 +70,86 @@ const ResourceHub = () => {
            <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {resources.length > 0 ? resources.map(resource => (
-            <div 
-              key={resource._id} 
-              className="group relative bg-[#0f172a]/30 border border-gray-800 rounded-[2rem] p-8 transition-all hover:bg-[#0f172a]/50 hover:border-cyan-500/30 hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-5 duration-500"
-            >
-              <div className="flex justify-between items-start mb-6">
-                <div className="w-14 h-14 bg-[#060e20] rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
-                  {resource.category === 'DSA' ? '📚' : resource.category === 'System Design' ? '🗺️' : resource.category === 'Resume' ? '📄' : '💎'}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {resources.length > 0 ? resources.map(resource => (
+              <div 
+                key={resource._id} 
+                className="group relative bg-[#0f172a]/30 border border-gray-800 rounded-[2rem] p-8 transition-all hover:bg-[#0f172a]/50 hover:border-cyan-500/30 hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-5 duration-500"
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-14 h-14 bg-[#060e20] rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
+                    {resource.category === 'DSA' ? '📚' : resource.category === 'System Design' ? '🗺️' : resource.category === 'Resume' ? '📄' : '💎'}
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    {resource.tags?.map(tag => (
+                      <span key={tag} className="text-[8px] font-black uppercase tracking-widest text-cyan-500/60 leading-none">
+                        • {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  {resource.tags?.map(tag => (
-                    <span key={tag} className="text-[8px] font-black uppercase tracking-widest text-cyan-500/60 leading-none">
-                      • {tag}
-                    </span>
-                  ))}
-                </div>
+
+                <h3 className="text-xl font-black text-white mb-3 group-hover:text-cyan-400 transition-colors tracking-tight">
+                  {resource.title}
+                </h3>
+                <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
+                  {resource.description}
+                </p>
+
+                <button 
+                  onClick={() => setSelectedResource(resource)}
+                  className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 group-hover:gap-4 transition-all"
+                >
+                  Launch Module <span>→</span>
+                </button>
+              </div>
+            )) : (
+              <div className="col-span-full text-center py-20 bg-gray-900/10 rounded-[2rem] border border-dashed border-gray-800">
+                 <p className="text-gray-600 font-medium italic">No materials found in this category.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-16">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="w-12 h-12 bg-[#0f172a]/40 border border-gray-800 rounded-2xl flex items-center justify-center text-gray-400 hover:text-white hover:border-cyan-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                ←
+              </button>
+              
+              <div className="flex gap-2">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-12 h-12 rounded-2xl text-[10px] font-black transition-all ${
+                      currentPage === i + 1
+                      ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20'
+                      : 'bg-[#0f172a]/20 text-gray-500 border border-gray-800 hover:border-gray-700 hover:text-white'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
               </div>
 
-              <h3 className="text-xl font-black text-white mb-3 group-hover:text-cyan-400 transition-colors tracking-tight">
-                {resource.title}
-              </h3>
-              <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
-                {resource.description}
-              </p>
-
-              <button 
-                onClick={() => setSelectedResource(resource)}
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 group-hover:gap-4 transition-all"
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="w-12 h-12 bg-[#0f172a]/40 border border-gray-800 rounded-2xl flex items-center justify-center text-gray-400 hover:text-white hover:border-cyan-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
-                Launch Module <span>→</span>
+                →
               </button>
             </div>
-          )) : (
-            <div className="col-span-full text-center py-20 bg-gray-900/10 rounded-[2rem] border border-dashed border-gray-800">
-               <p className="text-gray-600 font-medium italic">No materials found in this category.</p>
-            </div>
           )}
-        </div>
+        </>
       )}
+
 
       {/* Resource Viewer Modal */}
       {selectedResource && (
