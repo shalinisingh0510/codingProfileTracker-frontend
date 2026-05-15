@@ -1,6 +1,12 @@
 import React from 'react';
 
-const AdBanner = () => {
+const AdBanner = ({ 
+  title = "Master System Design Like a Pro.", 
+  description = "Unlock the core architectural patterns used by big tech companies. From scalability to extreme performance.",
+  ctaText = "Explore Blueprints",
+  icon = "⚡",
+  tag = "Featured Insight"
+}) => {
   return (
     <div className="relative group overflow-hidden bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-[2rem] border border-cyan-500/20 shadow-2xl transition-all duration-500 hover:shadow-cyan-500/10 hover:border-cyan-500/40 p-1 animate-float">
       {/* Animated Gradient Beam */}
@@ -10,25 +16,25 @@ const AdBanner = () => {
         <div className="flex flex-col gap-6">
           <div className="flex justify-between items-start">
             <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded-lg border border-cyan-500/20 backdrop-blur-md">
-              Featured Insight
+              {tag}
             </span>
             <div className="w-10 h-10 bg-gray-900/50 backdrop-blur-xl rounded-xl flex items-center justify-center text-xl shadow-inner border border-white/5">
-              ⚡
+              {icon}
             </div>
           </div>
           
           <div className="space-y-3">
-            <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
-              Master System Design <span className="text-cyan-400">Like a Pro.</span>
+            <h3 className="text-2xl font-black text-white tracking-tight leading-tight whitespace-pre-line">
+              {title}
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Unlock the core architectural patterns used by big tech companies. From scalability to extreme performance.
+              {description}
             </p>
           </div>
           
           <div className="pt-4 mt-auto">
             <button className="w-full py-4 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-cyan-600/20 transition-all hover:scale-[1.02] active:scale-95">
-              Explore Blueprints
+              {ctaText}
             </button>
           </div>
         </div>
@@ -41,3 +47,4 @@ const AdBanner = () => {
 };
 
 export default AdBanner;
+
