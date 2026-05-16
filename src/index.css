@@ -11,6 +11,7 @@
 @theme {
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-glow: pulse-glow 3s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
@@ -21,6 +22,18 @@
     0%, 100% { filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.2)); }
     50% { filter: drop-shadow(0 0 25px rgba(34, 211, 238, 0.5)); }
   }
+
+  @keyframes loading {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
 }
 
 body {

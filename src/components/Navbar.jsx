@@ -64,18 +64,19 @@ const Navbar = () => {
   return (
     <nav className="bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-800 px-6 py-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center text-white">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-emerald-500 rounded-xl flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/20">
-            C
-          </div>
-          <Link 
-            to={token ? (username ? `/${username}/dashboard` : "/dashboard") : "/login"} 
-            className="font-bold text-xl tracking-tight hover:text-blue-400 transition-colors hidden sm:block"
-          >
-            CodeProfile <span className="text-blue-400">Tracker</span>
+        <div className="flex items-center gap-4">
+          <Link to={token ? (username ? `/${username}/dashboard` : "/dashboard") : "/login"} className="flex items-center gap-4 group">
+            <img 
+              src="/logo.png" 
+              alt="CodeProfile" 
+              className="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]" 
+            />
+            <span className="font-black text-2xl tracking-tighter hover:text-cyan-400 transition-colors hidden sm:block">
+              CodeProfile<span className="text-cyan-400">.</span>
+            </span>
           </Link>
-
         </div>
+
 
         {/* Search Bar */}
         {token && (
