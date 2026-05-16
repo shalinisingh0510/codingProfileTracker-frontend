@@ -23,13 +23,15 @@ const AdminDashboard = () => {
   const fetchResources = async () => {
     try {
       const data = await getResources('All');
-      setResources(data);
+      // Handle both paginated object and legacy array
+      setResources(Array.isArray(data) ? data : (data.resources || []));
     } catch (error) {
       console.error('Error fetching resources:', error);
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleSave = async (data) => {
     try {

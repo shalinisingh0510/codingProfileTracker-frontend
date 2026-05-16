@@ -25,15 +25,24 @@ const ResourceHub = () => {
     setLoading(true);
     try {
       const data = await getResources(activeCategory, currentPage, 9);
-      setResources(data.resources || []);
-      setTotalPages(data.pages || 1);
-      setTotalResources(data.total || 0);
+      
+      // Defensive handling of response format
+      if (Array.isArray(data)) {
+        setResources(data);
+        setTotalPages(1);
+        setTotalResources(data.length);
+      } else {
+        setResources(data.resources || []);
+        setTotalPages(data.pages || 1);
+        setTotalResources(data.total || 0);
+      }
     } catch (error) {
       console.error('Error fetching resources:', error);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="mt-32 space-y-12">
