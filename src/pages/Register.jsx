@@ -64,8 +64,12 @@ const Register = () => {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data));
-        navigate('/dashboard');
+        
+        // Use identity-based routing
+        const username = data.username || formData.username;
+        navigate(`/${username}/dashboard`);
       }
+
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please check your details.');
     } finally {

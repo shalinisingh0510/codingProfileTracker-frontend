@@ -22,8 +22,12 @@ const Login = () => {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data));
-        navigate('/dashboard');
+        
+        // Use identity-based routing
+        const username = data.username || data.email.split('@')[0];
+        navigate(`/${username}/dashboard`);
       }
+
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
