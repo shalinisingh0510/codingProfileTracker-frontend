@@ -68,9 +68,13 @@ const Navbar = () => {
           <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-emerald-500 rounded-xl flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/20">
             C
           </div>
-          <Link to={token ? "/dashboard" : "/login"} className="font-bold text-xl tracking-tight hover:text-blue-400 transition-colors hidden sm:block">
+          <Link 
+            to={token ? (username ? `/${username}/dashboard` : "/dashboard") : "/login"} 
+            className="font-bold text-xl tracking-tight hover:text-blue-400 transition-colors hidden sm:block"
+          >
             CodeProfile <span className="text-blue-400">Tracker</span>
           </Link>
+
         </div>
 
         {/* Search Bar */}
@@ -133,11 +137,12 @@ const Navbar = () => {
                 <span className="text-sm font-medium">{user?.name}</span>
                 <span className="text-[10px] text-gray-400 uppercase tracking-widest leading-none">@{username}</span>
               </div>
-              <Link to="/dashboard" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</Link>
+              <Link to={username ? `/${username}/dashboard` : '/dashboard'} className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</Link>
               {user?.isAdmin && (
                 <Link to="/admin-dashboard" className="text-sm font-black text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-widest">Admin</Link>
               )}
               <Link to={username ? `/${username}/profile` : '/profile'} className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Profile</Link>
+
               <button 
                 onClick={handleLogout}
                 className="px-5 py-2 bg-gray-800 hover:bg-red-500/20 hover:text-red-500 border border-gray-700 hover:border-red-500/50 rounded-xl text-sm font-semibold transition-all"

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 function findBackendRoot() {
   const explicit = process.env.BACKEND_DIR;
@@ -129,6 +130,331 @@ function estimateReadTime(text) {
 
 function readerUrlFor(rawUrl) {
   return `https://r.jina.ai/http://${rawUrl.replace(/^https?:\/\//, '')}`;
+}
+
+async function fetchBinary(rawUrl) {
+  const response = await axios.get(rawUrl, {
+    timeout: 45000,
+    responseType: 'arraybuffer',
+    headers: {
+      'User-Agent': USER_AGENT,
+      Accept: '*/*',
+    },
+    maxContentLength: 10 * 1024 * 1024,
+    maxBodyLength: 10 * 1024 * 1024,
+  });
+
+  return Buffer.from(response.data);
+}
+
+function parseGoogleSheetWorkbook(sourceUrl) {
+  const pythonCode = `
+import io
+import json
+import sys
+import urllib.request
+import zipfile
+import xml.etree.ElementTree as ET
+
+NS_MAIN = {'main': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+NS_REL = {'rel': 'http://schemas.openxmlformats.org/package/2006/relationships'}
+
+def as_list(value):
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+def col_index(ref):
+    letters = ''.join(ch for ch in ref if ch.isalpha()) or 'A'
+    idx = 0
+    for ch in letters:
+        idx = idx * 26 + (ord(ch) - 64)
+    return idx - 1
+
+url = sys.argv[1]
+with urllib.request.urlopen(url, timeout=45) as resp:
+    data = resp.read()
+
+z = zipfile.ZipFile(io.BytesIO(data))
+shared_strings = []
+shared_root = ET.fromstring(z.read('xl/sharedStrings.xml'))
+for si in shared_root.findall('main:si', NS_MAIN):
+    texts = [node.text or '' for node in si.findall('.//main:t', NS_MAIN)]
+    shared_strings.append(''.join(texts))
+
+rels_root = ET.fromstring(z.read('xl/_rels/workbook.xml.rels'))
+workbook_rels = {
+    rel.attrib['Id']: rel.attrib['Target']
+    for rel in rels_root.findall('rel:Relationship', NS_REL)
+}
+
+workbook_root = ET.fromstring(z.read('xl/workbook.xml'))
+sheets = []
+for sheet in workbook_root.findall('main:sheets/main:sheet', NS_MAIN):
+    rel_path = workbook_rels.get(sheet.attrib.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id'))
+    if not rel_path:
+        continue
+    normalized_path = 'xl/' + rel_path.replace('../', '')
+    sheet_xml = ET.fromstring(z.read(normalized_path))
+    sheet_number = normalized_path.split('sheet')[-1].split('.xml')[0]
+    rels_name = f'xl/worksheets/_rels/sheet{sheet_number}.xml.rels'
+    link_rels = {}
+    if rels_name in z.namelist():
+        rels_xml = ET.fromstring(z.read(rels_name))
+        link_rels = {
+            rel.attrib['Id']: rel.attrib['Target']
+            for rel in rels_xml.findall('rel:Relationship', NS_REL)
+        }
+    hyperlink_map = {}
+    hyperlinks_node = sheet_xml.find('main:hyperlinks', NS_MAIN)
+    if hyperlinks_node is not None:
+      for hyperlink in hyperlinks_node.findall('main:hyperlink', NS_MAIN):
+        ref = hyperlink.attrib.get('ref')
+        rel_id = hyperlink.attrib.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id')
+        if ref and rel_id and rel_id in link_rels:
+            hyperlink_map[ref] = link_rels[rel_id]
+    rows = []
+    for row in sheet_xml.findall('main:sheetData/main:row', NS_MAIN):
+        cells = []
+        for cell in row.findall('main:c', NS_MAIN):
+            ref = cell.attrib.get('r', '')
+            cell_type = cell.attrib.get('t')
+            value = ''
+            if cell_type == 's':
+                v = cell.findtext('main:v', default='', namespaces=NS_MAIN)
+                value = shared_strings[int(v)] if v else ''
+            elif cell_type == 'inlineStr':
+                value = ''.join(node.text or '' for node in cell.findall('.//main:t', NS_MAIN))
+            else:
+                value = cell.findtext('main:v', default='', namespaces=NS_MAIN)
+            value = value.strip()
+            link = hyperlink_map.get(ref)
+            if value or link:
+                cells.append({
+                    'ref': ref,
+                    'columnIndex': col_index(ref),
+                    'value': value,
+                    'link': link,
+                })
+        if cells:
+            rows.append(sorted(cells, key=lambda item: item['columnIndex']))
+    sheets.append({
+        'name': sheet.attrib.get('name', 'Sheet'),
+        'rows': rows,
+    })
+
+print(json.dumps({
+    'title': "DSA by Shradha Ma'am - Google Drive",
+    'sourceUrl': url,
+    'sheets': sheets,
+}))
+  `.trim();
+
+  const stdout = execFileSync('python3', ['-c', pythonCode, sourceUrl], {
+    encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024,
+  });
+
+  return JSON.parse(stdout);
+}
+
+function buildGoogleSheetsHtml(resource, workbookData) {
+  const tabLinks = [];
+  let totalQuestions = 0;
+
+  const sheetSections = workbookData.sheets.map((sheet, sheetIndex) => {
+    const introRows = [];
+    const questionRows = [];
+
+    for (const row of sheet.rows) {
+      const normalized = row.map((cell) => cell.value).filter(Boolean);
+      if (!normalized.length) {
+        continue;
+      }
+
+      const firstValue = normalized[0];
+      if (/^topics?$/i.test(firstValue)) {
+        continue;
+      }
+
+      if (row.some((cell) => cell.link)) {
+        questionRows.push(row);
+      } else if (introRows.length < 8) {
+        introRows.push(normalized.join(' | '));
+      }
+    }
+
+    totalQuestions += questionRows.length;
+    const sectionId = `sheet-${sheetIndex + 1}-${slugify(sheet.name)}`;
+    tabLinks.push(`<a href="#${sectionId}" class="rh-sync-pill">${escapeHtml(sheet.name)}</a>`);
+
+    return `
+      <section class="rh-sync-section" id="${escapeHtml(sectionId)}">
+        <div class="rh-sync-section-head">
+          <span class="rh-sync-kicker">${escapeHtml(sheet.name)}</span>
+        </div>
+        ${
+          introRows.length
+            ? `<div class="rh-sync-body">${introRows.map((line) => `<p>${escapeHtml(line)}</p>`).join('')}</div>`
+            : ''
+        }
+        <div class="rh-sync-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Topic</th>
+                <th>Question</th>
+                <th>Companies / Remarks</th>
+                <th>More</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${questionRows
+                .map((row) => {
+                  const topic = row.find((cell) => cell.columnIndex === 0)?.value || '';
+                  const questionCell = row.find((cell) => cell.columnIndex === 1) || null;
+                  const companies = row.find((cell) => cell.columnIndex === 2)?.value || '';
+                  const remarks = row.find((cell) => cell.columnIndex === 3)?.value || '';
+                  const questionHtml = questionCell?.link
+                    ? `<a href="${escapeHtml(questionCell.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(
+                        questionCell.value
+                      )}</a>`
+                    : escapeHtml(questionCell?.value || '');
+
+                  return `
+                    <tr>
+                      <td>${escapeHtml(topic)}</td>
+                      <td>${questionHtml}</td>
+                      <td>${escapeHtml(companies)}</td>
+                      <td>${escapeHtml(remarks)}</td>
+                    </tr>
+                  `;
+                })
+                .join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  });
+
+  return {
+    description: `Shradha Ma'am DSA sheet with ${totalQuestions} linked practice questions across ${workbookData.sheets.length} tabs.`,
+    html: `
+      <style>
+        .rh-sync-article {
+          display: grid;
+          gap: 2rem;
+          color: #dbe4ee;
+        }
+        .rh-sync-hero,
+        .rh-sync-section {
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0.75), rgba(2, 8, 23, 0.92));
+          border: 1px solid rgba(148, 163, 184, 0.14);
+          border-radius: 1.75rem;
+          padding: 1.5rem;
+        }
+        .rh-sync-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.6rem;
+          margin-bottom: 1rem;
+        }
+        .rh-sync-pill {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.45rem 0.8rem;
+          border-radius: 999px;
+          background: rgba(34, 211, 238, 0.1);
+          border: 1px solid rgba(34, 211, 238, 0.25);
+          color: #67e8f9;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          text-decoration: none;
+        }
+        .rh-sync-summary {
+          font-size: 1.05rem;
+          line-height: 1.9;
+          color: #dbeafe;
+          margin: 0;
+        }
+        .rh-sync-section-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+        }
+        .rh-sync-kicker {
+          color: #67e8f9;
+          font-size: 0.72rem;
+          font-weight: 900;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+        }
+        .rh-sync-body p {
+          color: #dbe4ee;
+          line-height: 1.8;
+        }
+        .rh-sync-table-wrap {
+          overflow-x: auto;
+        }
+        .rh-sync-table-wrap table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .rh-sync-table-wrap th,
+        .rh-sync-table-wrap td {
+          padding: 0.8rem 0.9rem;
+          border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+          text-align: left;
+          vertical-align: top;
+          color: #dbe4ee;
+        }
+        .rh-sync-table-wrap th {
+          color: #f8fafc;
+          background: rgba(34, 211, 238, 0.08);
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+        .rh-sync-table-wrap a {
+          color: #67e8f9;
+          text-decoration: underline;
+          text-underline-offset: 0.2rem;
+        }
+      </style>
+      <article class="rh-sync-article" data-source-slug="${escapeHtml(slugify(resource.link))}">
+        <section class="rh-sync-hero">
+          <div class="rh-sync-meta">
+            <span class="rh-sync-pill">${escapeHtml(resource.category)}</span>
+            <span class="rh-sync-pill">google sheets</span>
+            <span class="rh-sync-pill">${escapeHtml(`${totalQuestions} questions`)}</span>
+            ${tabLinks.join('')}
+          </div>
+          <p class="rh-sync-summary">${escapeHtml(
+            `Shradha Ma'am DSA sheet compiled into a single Resource Hub blog with both tabs, all visible question links, and the surrounding guidance from the original sheet.`
+          )}</p>
+        </section>
+        ${sheetSections.join('')}
+      </article>
+    `,
+  };
+}
+
+async function fetchGoogleSheetsContent(resource) {
+  const exportUrl = (() => {
+    const url = new URL(resource.link);
+    const match = url.pathname.match(/\/spreadsheets\/(?:u\/\d+\/)?d\/([^/]+)/);
+    if (!match) {
+      throw new Error(`Could not extract Google Sheets id from ${resource.link}`);
+    }
+    return `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=xlsx`;
+  })();
+
+  const workbookData = parseGoogleSheetWorkbook(exportUrl);
+  return buildGoogleSheetsHtml(resource, workbookData);
 }
 
 function removeTrailingDiscussion(markdown) {
@@ -856,6 +1182,12 @@ async function fetchStructuredContent(resource) {
   const normalizedUrl = normalizeUrl(resource.link);
   if (cache.has(normalizedUrl)) {
     return cache.get(normalizedUrl);
+  }
+
+  if (/docs\.google\.com\/spreadsheets\//i.test(normalizedUrl)) {
+    const structured = await fetchGoogleSheetsContent(resource);
+    cache.set(normalizedUrl, structured);
+    return structured;
   }
 
   const response = await fetchWithReader(normalizedUrl);

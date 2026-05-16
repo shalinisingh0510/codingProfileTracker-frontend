@@ -6,47 +6,36 @@ import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
-import PublicDashboard from './pages/PublicDashboard';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import {
+  HomeRedirect,
+  LegacyDashboardRedirect,
+  LegacyProfileRedirect,
+  UsernameDashboardRoute,
+  UsernameProfileRoute,
+} from './components/RouteGate';
 
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<HomeRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/profile" 
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } 
-        />
+        <Route path="/dashboard" element={<LegacyDashboardRedirect />} />
+        <Route path="/profile" element={<LegacyProfileRedirect />} />
         <Route 
           path="/:username/profile" 
           element={
             <ProtectedRoute>
-              <Profile />
+              <UsernameProfileRoute />
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/:username/dashboard" 
-          element={<PublicDashboard />} 
-        />
+        <Route path="/:username/dashboard" element={<UsernameDashboardRoute />} />
         <Route 
           path="/admin-dashboard" 
           element={
@@ -55,7 +44,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<HomeRedirect />} />
       </Routes>
     </Router>
   );
