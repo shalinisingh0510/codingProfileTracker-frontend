@@ -8,6 +8,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user'));
@@ -18,13 +20,20 @@ const AdminDashboard = () => {
       return;
     }
     fetchResources();
-  }, [user, navigate]);
+  }, [user, navigate, currentPage]);
 
   const fetchResources = async () => {
+    setLoading(true);
     try {
-      const data = await getResources('All');
+      const data = await getResources('All', currentPage, 10);
       // Handle both paginated object and legacy array
-      setResources(Array.isArray(data) ? data : (data.resources || []));
+      if (Array.isArray(data)) {
+        setResources(data);
+        setTotalPages(1);
+      } else {
+        setResources(data.resources || []);
+        setTotalPages(data.pages || 1);
+      }
     } catch (error) {
       console.error('Error fetching resources:', error);
     } finally {
@@ -145,8 +154,34 @@ const AdminDashboard = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="p-8 border-t border-gray-800 flex justify-between items-center bg-[#0f172a]/10">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                Page {currentPage} of {totalPages}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-6 py-2 bg-gray-900 border border-gray-800 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-cyan-500/50 disabled:opacity-30 transition-all"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-6 py-2 bg-gray-900 border border-gray-800 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-cyan-500/50 disabled:opacity-30 transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
 
       {isEditorOpen && (
         <ResourceEditor 
