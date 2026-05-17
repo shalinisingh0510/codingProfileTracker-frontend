@@ -13,6 +13,7 @@ const Pricing = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [selectedPlan, setSelectedPlan] = useState(null); // { tier, name, price }
+  const [razorpayOrder, setRazorpayOrder] = useState(null); // Razorpay order object from backend
 
   const plans = {
     free: {
@@ -69,7 +70,21 @@ const Pricing = () => {
     }
   };
 
-  const handleSubscribeClick = (tier, name, price) => {
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleSubscribeClick = async (tier, name, price) => {
     if (!token) {
       navigate('/login');
       return;
@@ -77,16 +92,121 @@ const Pricing = () => {
     setSelectedPlan({ tier, name, price });
     setSuccessMsg('');
     setErrorMsg('');
+    setRazorpayOrder(null);
+    setLoading(true);
+
+    try {
+      // Step 1: Create order on backend
+      const response = await axios.post(
+        'http://localhost:5050/api/subscription/razorpay-order',
+        {
+          tier,
+          plan: duration
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setRazorpayOrder(response.data);
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'Failed to initialize Razorpay transaction.');
+      setSelectedPlan(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCheckout = async () => {
+  const handleRealRazorpayPayment = async () => {
+    if (!razorpayOrder) return;
     setLoading(true);
-    setSuccessMsg('');
     setErrorMsg('');
+    setSuccessMsg('');
+
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded) {
+      setErrorMsg('Failed to load Razorpay SDK. Check your internet connection.');
+      setLoading(false);
+      return;
+    }
+
+    const options = {
+      key: razorpayOrder.key,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      name: 'CodeProfile Command Center',
+      description: `Subscription to ${selectedPlan.name} (${duration})`,
+      image: 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=100&h=100&fit=crop',
+      order_id: razorpayOrder.id,
+      handler: async function (response) {
+        setLoading(true);
+        try {
+          const verifyRes = await axios.post(
+            'http://localhost:5050/api/subscription/razorpay-verify',
+            {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              tier: selectedPlan.tier,
+              plan: duration
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+
+          const updatedUser = {
+            ...user,
+            subscriptionTier: verifyRes.data.subscription.tier,
+            subscriptionPlan: verifyRes.data.subscription.plan,
+            subscriptionStatus: verifyRes.data.subscription.status,
+            subscriptionExpiresAt: verifyRes.data.subscription.expiresAt
+          };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+
+          setSuccessMsg(`Welcome aboard! Subscription to ${selectedPlan.name} is now active.`);
+          setTimeout(() => {
+            setSelectedPlan(null);
+            navigate(updatedUser.username ? `/${updatedUser.username}/dashboard` : '/dashboard');
+          }, 2500);
+        } catch (err) {
+          setErrorMsg(err.response?.data?.message || 'Payment verification failed.');
+        } finally {
+          setLoading(false);
+        }
+      },
+      prefill: {
+        name: user?.name || '',
+        email: user?.email || ''
+      },
+      theme: {
+        color: selectedPlan.tier === 'premium' ? '#06b6d4' : '#10b981'
+      },
+      modal: {
+        ondismiss: function () {
+          setLoading(false);
+        }
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
+
+  const handleSimulatedPaymentSuccess = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
     try {
-      const response = await axios.post(
-        'http://localhost:5050/api/subscription/checkout',
+      const mockResponse = {
+        razorpay_payment_id: 'pay_mock_' + Math.random().toString(36).substring(2, 10),
+        razorpay_order_id: razorpayOrder.id,
+        razorpay_signature: 'mock_signature_dev_' + Math.random().toString(36).substring(2, 15)
+      };
+
+      const verifyRes = await axios.post(
+        'http://localhost:5050/api/subscription/razorpay-verify',
         {
+          ...mockResponse,
           tier: selectedPlan.tier,
           plan: duration
         },
@@ -95,23 +215,22 @@ const Pricing = () => {
         }
       );
 
-      // Update user localStorage with new tier
       const updatedUser = {
         ...user,
-        subscriptionTier: response.data.subscription.tier,
-        subscriptionPlan: response.data.subscription.plan,
-        subscriptionStatus: response.data.subscription.status,
-        subscriptionExpiresAt: response.data.subscription.expiresAt
+        subscriptionTier: verifyRes.data.subscription.tier,
+        subscriptionPlan: verifyRes.data.subscription.plan,
+        subscriptionStatus: verifyRes.data.subscription.status,
+        subscriptionExpiresAt: verifyRes.data.subscription.expiresAt
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
 
-      setSuccessMsg(`Welcome aboard! Subscription to ${selectedPlan.name} is active.`);
+      setSuccessMsg(`[Dev Mode] Payment Simulated Successfully! subscription is active.`);
       setTimeout(() => {
         setSelectedPlan(null);
         navigate(updatedUser.username ? `/${updatedUser.username}/dashboard` : '/dashboard');
       }, 2500);
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Transaction failed. Please try again.');
+      setErrorMsg(err.response?.data?.message || 'Simulated transaction failed.');
     } finally {
       setLoading(false);
     }
@@ -277,196 +396,99 @@ const Pricing = () => {
         {/* PAYMENT RECOMMENDATION SECTION */}
         <div className="mt-24 p-8 rounded-[2.5rem] bg-gray-900/20 border border-gray-800/60 max-w-4xl mx-auto">
           <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-            💳 Recommended Payment Integration Strategies
+            💳 Integrated payment System: Razorpay Standard
           </h3>
-          <p className="text-xs text-gray-400 leading-relaxed mb-4">
-            Since your pricing tier plans are billed in Rupees (₹), here are the most suitable global and domestic transaction methods:
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Your billing is now powered by **Razorpay Standard Checkout**. It fully automates UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards, Net Banking, and Wallet payments seamlessly with full compliance.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div className="p-4 bg-gray-900/40 border border-gray-800 rounded-2xl">
-              <span className="font-bold text-xs text-cyan-400 block mb-1">Razorpay Checkout</span>
-              <p className="text-[11px] text-gray-400 leading-normal">
-                **Best for India.** Supports UPI (Google Pay, PhonePe, Paytm), local Net Banking, and Cards. Razorpay Subscriptions automate monthly/yearly recurring charges cleanly and handles the RBI regulations perfectly.
-              </p>
-            </div>
-            <div className="p-4 bg-gray-900/40 border border-gray-800 rounded-2xl">
-              <span className="font-bold text-xs text-cyan-400 block mb-1">Stripe Billing</span>
-              <p className="text-[11px] text-gray-400 leading-normal">
-                **Best for Global.** Stripe Checkout handles billing customer portals, automated subscription invoices, discount coupons, and multi-currency out-of-the-box. Extremely secure and developer-friendly.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* CHECKOUT PAYMENT DIALOG MODAL */}
-      {selectedPlan && (() => {
-        // Local checkout sub-state
-        const [method, setMethod] = useState('mock'); // 'mock', 'upi'
-        const [utr, setUtr] = useState('');
+      {/* RAZORPAY CHECKOUT DIALOG MODAL */}
+      {selectedPlan && razorpayOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-6 animate-in fade-in duration-300">
+          <div className="bg-[#0b0f19] border border-gray-800 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl text-center">
+            <button
+              onClick={() => setSelectedPlan(null)}
+              className="absolute top-6 right-6 text-gray-400 hover:text-white font-bold text-xl"
+            >
+              ✕
+            </button>
 
-        const handleUpiSubmit = async (e) => {
-          e.preventDefault();
-          if (!utr || utr.length < 12) {
-            setErrorMsg('Please enter a valid 12-digit UPI UTR number.');
-            return;
-          }
-          setLoading(true);
-          setErrorMsg('');
-          setSuccessMsg('');
-          try {
-            // Simulated real verification
-            const response = await axios.post(
-              'http://localhost:5050/api/subscription/checkout',
-              {
-                tier: selectedPlan.tier,
-                plan: duration,
-                utr: utr
-              },
-              {
-                headers: { Authorization: `Bearer ${token}` }
-              }
-            );
+            <div className="mb-6">
+              <span className="text-4xl">{selectedPlan.tier === 'plus' ? '⭐' : '👑'}</span>
+              <h3 className="text-xl font-black mt-3">Razorpay Checkout</h3>
+              <p className="text-xs text-gray-400 mt-1">
+                Subscribing to {selectedPlan.name} ({duration})
+              </p>
+            </div>
 
-            const updatedUser = {
-              ...user,
-              subscriptionTier: response.data.subscription.tier,
-              subscriptionPlan: response.data.subscription.plan,
-              subscriptionStatus: response.data.subscription.status,
-              subscriptionExpiresAt: response.data.subscription.expiresAt
-            };
-            localStorage.setItem('user', JSON.stringify(updatedUser));
+            <div className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 mb-6 text-left">
+              <div className="flex justify-between items-center text-xs text-gray-400 mb-2">
+                <span>Order ID:</span>
+                <span className="font-bold text-white max-w-[150px] truncate">{razorpayOrder.id}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs text-gray-400 mb-4">
+                <span>Duration:</span>
+                <span className="font-bold text-white uppercase tracking-wider">{duration}</span>
+              </div>
+              <div className="border-t border-gray-800 pt-3 flex justify-between items-center text-sm">
+                <span className="font-bold">Total Amount:</span>
+                <span className="font-black text-cyan-400 text-base">₹{selectedPlan.price}</span>
+              </div>
+            </div>
 
-            setSuccessMsg(`UTR Submitted! Your ${selectedPlan.name} is now active.`);
-            setTimeout(() => {
-              setSelectedPlan(null);
-              navigate(updatedUser.username ? `/${updatedUser.username}/dashboard` : '/dashboard');
-            }, 2500);
-          } catch (err) {
-            setErrorMsg(err.response?.data?.message || 'Verification failed. Please try again.');
-          } finally {
-            setLoading(false);
-          }
-        };
+            {errorMsg && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3.5 rounded-xl mb-4 text-center">
+                {errorMsg}
+              </div>
+            )}
 
-        const upiId = 'shalucodethrust@okaxis';
-        const upiPayload = `upi://pay?pa=${upiId}&pn=Shalini&am=${selectedPlan.price}&cu=INR&tn=CodeProfile-${selectedPlan.tier}`;
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiPayload)}`;
+            {successMsg && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs p-3.5 rounded-xl mb-4 text-center font-bold">
+                {successMsg}
+              </div>
+            )}
 
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-6 animate-in fade-in duration-300">
-            <div className="bg-[#0b0f19] border border-gray-800 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl overflow-y-auto max-h-[90vh]">
+            {/* Standard Trigger Button */}
+            {!razorpayOrder.isMock ? (
               <button
-                onClick={() => setSelectedPlan(null)}
-                className="absolute top-6 right-6 text-gray-400 hover:text-white font-bold text-xl"
+                onClick={handleRealRazorpayPayment}
+                disabled={loading}
+                className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 disabled:bg-gray-800 text-[#020617] disabled:text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all"
               >
-                ✕
+                {loading ? 'Launching Razorpay...' : 'Launch Razorpay Gateway 🚀'}
               </button>
-
-              <div className="text-center mb-6">
-                <span className="text-4xl">{selectedPlan.tier === 'plus' ? '⭐' : '👑'}</span>
-                <h3 className="text-xl font-black mt-3">Confirm Checkout</h3>
-                <p className="text-xs text-gray-400 mt-1">
-                  You are subscribing to {selectedPlan.name}
-                </p>
-              </div>
-
-              {/* Method Switcher Tabs */}
-              <div className="flex bg-gray-900/60 p-1 rounded-xl border border-gray-800 mb-6">
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] p-3 rounded-xl mb-2 text-left leading-relaxed">
+                  ⚠️ <strong>Developer Mode:</strong> Key credentials are mock/missing in backend .env. Launching simulated Razorpay Sandbox.
+                </div>
                 <button
-                  onClick={() => setMethod('mock')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                    method === 'mock' ? 'bg-cyan-500 text-[#020617]' : 'text-gray-400'
-                  }`}
+                  onClick={handleSimulatedPaymentSuccess}
+                  disabled={loading}
+                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 disabled:bg-gray-800 text-[#020617] disabled:text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all transform hover:scale-[1.02] shadow-lg shadow-emerald-500/10"
                 >
-                  Mock Checkout
+                  {loading ? 'Simulating...' : 'Simulate Success Razorpay Charge 🟢'}
                 </button>
                 <button
-                  onClick={() => setMethod('upi')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                    method === 'upi' ? 'bg-emerald-500 text-[#020617]' : 'text-gray-400'
-                  }`}
+                  onClick={() => {
+                    setErrorMsg('Simulated payment was cancelled or failed.');
+                  }}
+                  disabled={loading}
+                  className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all"
                 >
-                  Direct UPI QR (0% Fee)
+                  Simulate Cancel Payment 🔴
                 </button>
               </div>
+            )}
 
-              <div className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 mb-6">
-                <div className="flex justify-between items-center text-xs text-gray-400 mb-2">
-                  <span>Selected Plan:</span>
-                  <span className="font-bold text-white uppercase tracking-wider">{duration}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs text-gray-400 mb-4">
-                  <span>Price:</span>
-                  <span className="font-bold text-white">₹{selectedPlan.price}</span>
-                </div>
-                <div className="border-t border-gray-800 pt-3 flex justify-between items-center text-sm">
-                  <span className="font-bold">Total Amount:</span>
-                  <span className={`font-black text-base ${method === 'upi' ? 'text-emerald-400' : 'text-cyan-400'}`}>₹{selectedPlan.price}</span>
-                </div>
-              </div>
-
-              {errorMsg && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3.5 rounded-xl mb-4 text-center">
-                  {errorMsg}
-                </div>
-              )}
-
-              {successMsg && (
-                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs p-3.5 rounded-xl mb-4 text-center font-bold">
-                  {successMsg}
-                </div>
-              )}
-
-              {method === 'mock' ? (
-                <div className="space-y-3">
-                  <button
-                    onClick={handleCheckout}
-                    disabled={loading}
-                    className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 disabled:bg-gray-800 text-[#020617] disabled:text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all"
-                  >
-                    {loading ? 'Processing...' : 'Pay via Mock Checkout'}
-                  </button>
-                  <div className="text-center text-[9px] text-gray-500 uppercase tracking-widest mt-4">
-                    UPI • Credit Card • Netbanking Simulated
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleUpiSubmit} className="space-y-6 text-center">
-                  <div className="flex flex-col items-center bg-white p-4 rounded-3xl border border-gray-200 shadow-inner w-48 h-48 mx-auto">
-                    <img src={qrUrl} alt="UPI QR Code" className="w-full h-full object-contain" />
-                  </div>
-                  <p className="text-[10px] text-gray-400 leading-relaxed px-4">
-                    Scan with Google Pay, PhonePe, or Paytm and pay <strong className="text-emerald-400">₹{selectedPlan.price}</strong> directly to VPA <strong className="text-white">{upiId}</strong>. No middleman, 100% free bank-to-bank transfer!
-                  </p>
-                  
-                  <div className="text-left space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-wider text-gray-500 block">
-                      12-Digit Transaction UTR Ref No:
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={12}
-                      value={utr}
-                      onChange={(e) => setUtr(e.target.value.replace(/\D/g, ''))}
-                      placeholder="e.g. 308945671234"
-                      className="w-full px-4 py-3 bg-gray-900 border border-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl text-sm font-semibold text-white placeholder-gray-600 focus:outline-none transition-all"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 disabled:bg-gray-800 text-[#020617] disabled:text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all"
-                  >
-                    {loading ? 'Submitting...' : 'Submit UTR & Activate'}
-                  </button>
-                </form>
-              )}
+            <div className="text-center text-[9px] text-gray-500 uppercase tracking-widest mt-4">
+              Secured by Razorpay Payments
             </div>
           </div>
-        );
-      })()}
+        </div>
+      )}
     </div>
   );
 };
