@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import Pricing from './pages/Pricing';
 import AdminDashboard from './pages/AdminDashboard';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -25,6 +26,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/dashboard" element={<LegacyDashboardRedirect />} />
         <Route path="/profile" element={<LegacyProfileRedirect />} />
         <Route 
