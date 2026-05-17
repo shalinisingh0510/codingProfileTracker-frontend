@@ -44,6 +44,38 @@ const PlatformCard = ({ name, data, loading, color, icon }) => {
   }
   if (!data || data.error) return null;
 
+  if (name === 'GfG') {
+    return (
+      <div className="bg-[#0f172a]/30 p-6 rounded-2xl border border-emerald-500/20 hover:border-emerald-500/40 hover:bg-[#0f172a]/40 transition-all">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">{icon}</span>
+            <h3 className={`text-lg font-black tracking-tight ${color}`}>{name}</h3>
+          </div>
+          <span className="text-[7px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">Active Coder</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-gray-900/40 p-3 rounded-xl">
+            <span className="text-[7px] text-gray-500 uppercase font-black tracking-widest block mb-0.5">Total Solved</span>
+            <span className="text-lg font-black text-white">{data.problemsSolved || 0}</span>
+          </div>
+          <div className="bg-gray-900/40 p-3 rounded-xl">
+            <span className="text-[7px] text-gray-500 uppercase font-black tracking-widest block mb-0.5">Coding Score</span>
+            <span className="text-lg font-black text-emerald-400">{data.codingScore || 0}</span>
+          </div>
+          <div className="bg-gray-900/40 p-3 rounded-xl">
+            <span className="text-[7px] text-gray-500 uppercase font-black tracking-widest block mb-0.5">Institute Rank</span>
+            <span className="text-lg font-black text-white">{data.rank || '---'}</span>
+          </div>
+          <div className="bg-gray-900/40 p-3 rounded-xl">
+            <span className="text-[7px] text-gray-500 uppercase font-black tracking-widest block mb-0.5">Streak</span>
+            <span className="text-lg font-black text-indigo-400">{data.streak || 0} days</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#0f172a]/30 p-6 rounded-2xl border border-gray-800 hover:border-gray-700/50 transition-all">
       <div className="flex items-center gap-3 mb-4">
