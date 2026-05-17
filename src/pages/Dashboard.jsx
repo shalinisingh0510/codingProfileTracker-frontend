@@ -478,6 +478,10 @@ const Dashboard = () => {
   }, []);
 
   const handleAnalyzeProfile = async () => {
+    if (!user?.subscriptionTier || user?.subscriptionTier === 'free') {
+      setShowUpgradeModal(true);
+      return;
+    }
     setIsAnalyzing(true);
     setShowAIModal(true);
     try {
@@ -585,8 +589,23 @@ const Dashboard = () => {
                 <span className="h-px w-8 bg-cyan-400"></span>
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400">{user?.collegeName || 'Senior Architect'}</span>
               </div>
-              <h1 className="text-6xl md:text-7xl font-black tracking-tighter text-white leading-tight">
-                {user?.name || 'Developer'}<span className="text-cyan-400">.</span>
+              <h1 className="text-6xl md:text-7xl font-black tracking-tighter text-white leading-tight flex flex-wrap items-center gap-4">
+                <span>{user?.name || 'Developer'}<span className="text-cyan-400">.</span></span>
+                {user?.subscriptionTier === 'premium' && (
+                  <span className="text-xs font-black uppercase tracking-[0.2em] bg-gradient-to-r from-amber-400 to-yellow-500 text-[#020617] px-3.5 py-1.5 rounded-full shadow-lg shadow-yellow-500/20 animate-pulse border border-yellow-300/30">
+                    👑 Premium
+                  </span>
+                )}
+                {user?.subscriptionTier === 'plus' && (
+                  <span className="text-xs font-black uppercase tracking-[0.2em] bg-gradient-to-r from-emerald-400 to-teal-500 text-[#020617] px-3.5 py-1.5 rounded-full shadow-lg shadow-emerald-500/20 border border-emerald-300/30">
+                    ⭐ Plus
+                  </span>
+                )}
+                {(!user?.subscriptionTier || user?.subscriptionTier === 'free') && (
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-gray-900 border border-gray-800 text-gray-500 px-3 py-1 rounded-full">
+                    Free Tier
+                  </span>
+                )}
               </h1>
               <div className="flex flex-wrap gap-2 mt-4">
                 {user?.skills?.map((skill, idx) => (
