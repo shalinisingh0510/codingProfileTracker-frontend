@@ -139,6 +139,7 @@ const Navbar = () => {
                 <span className="text-[10px] text-gray-400 uppercase tracking-widest leading-none">@{username}</span>
               </div>
               <Link to={username ? `/${username}/dashboard` : '/dashboard'} className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</Link>
+              <Link to="/pricing" className="text-sm font-semibold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1">👑 Pricing</Link>
               {user?.isAdmin && (
                 <Link to="/admin-dashboard" className="text-sm font-black text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-widest">Admin</Link>
               )}
@@ -153,6 +154,7 @@ const Navbar = () => {
             </>
           ) : (
             <div className="flex items-center gap-4">
+              <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors text-sm font-medium mr-2">Pricing</Link>
               <Link to="/login" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">Log In</Link>
               <Link 
                 to="/register" 

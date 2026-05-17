@@ -453,6 +453,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiReport, setAiReport] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
   const navigate = useNavigate();
 
