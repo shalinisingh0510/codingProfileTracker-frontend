@@ -82,6 +82,47 @@ const PlatformSection = ({ name, data, loading, color, icon, labels = {} }) => {
 
   if (!data || data.error) return null;
 
+  if (name === 'GfG') {
+    return (
+      <div className="bg-[#0f172a]/30 p-6 md:p-8 rounded-[2rem] border border-emerald-500/20 transition-all hover:bg-[#0f172a]/40 hover:border-emerald-500/40 animate-in fade-in zoom-in-95 duration-500">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center text-xl shadow-inner border border-gray-800">
+              {icon}
+            </div>
+            <div>
+              <h3 className={`text-2xl font-black tracking-tighter ${color}`}>{name}</h3>
+              <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest">Active Coder</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="block text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Coding Score</span>
+            <span className={`text-lg font-black ${color}`}>{data.codingScore || 0}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">Total Solved</span>
+            <span className="text-xl font-black text-white">{data.problemsSolved || 0}</span>
+          </div>
+          <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">Coding Score</span>
+            <span className="text-xl font-black text-emerald-400">{data.codingScore || 0}</span>
+          </div>
+          <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">Institute Rank</span>
+            <span className="text-xl font-black text-white">{data.rank || '---'}</span>
+          </div>
+          <div className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800/30">
+            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest block mb-1">Streak</span>
+            <span className="text-xl font-black text-indigo-400">{data.streak || 0} days</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const defaultLabels = {
     total: 'Total Solved',
     recent: 'Solved (2024)',
@@ -423,7 +464,7 @@ const Dashboard = () => {
       setPlatforms(prev => ({ ...prev, [platformName]: data }));
       
       // Update total solved as data arrives
-      const solvedCount = data.totalSolved || data.totalContributions || 0;
+      const solvedCount = data.totalSolved || data.totalContributions || data.problemsSolved || 0;
       if (solvedCount > 0) {
         setTotalSolved(prev => prev + solvedCount);
       }
