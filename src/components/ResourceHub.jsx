@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getResources } from '../services/api';
 
 const ResourceHub = () => {
+  const navigate = useNavigate();
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedResource, setSelectedResource] = useState(null);
+  const [lockedResource, setLockedResource] = useState(null); // Tracks the resource prompting an upsell
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResources, setTotalResources] = useState(0);
@@ -42,7 +45,6 @@ const ResourceHub = () => {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="mt-32 space-y-12">
@@ -84,33 +86,54 @@ const ResourceHub = () => {
             {resources.length > 0 ? resources.map(resource => (
               <div 
                 key={resource._id} 
-                className="group relative bg-[#0f172a]/30 border border-gray-800 rounded-[2rem] p-8 transition-all hover:bg-[#0f172a]/50 hover:border-cyan-500/30 hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-5 duration-500"
+                className={`group relative bg-[#0f172a]/30 border rounded-[2.5rem] p-8 transition-all hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-5 duration-500 flex flex-col justify-between min-h-[320px] ${
+                  resource.isLocked 
+                    ? 'border-amber-500/10 hover:border-amber-500/30 hover:bg-amber-950/5' 
+                    : 'border-gray-800 hover:bg-[#0f172a]/50 hover:border-cyan-500/30'
+                }`}
               >
-                <div className="flex justify-between items-start mb-6">
-                  <div className="w-14 h-14 bg-[#060e20] rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
-                    {resource.category === 'DSA' ? '📚' : resource.category === 'System Design' ? '🗺️' : resource.category === 'Resume' ? '📄' : '💎'}
+                {/* Lock Badge */}
+                {resource.isLocked && (
+                  <div className="absolute top-6 right-6 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1 shadow-lg">
+                    <span>🔒 Premium</span>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    {resource.tags?.map(tag => (
-                      <span key={tag} className="text-[8px] font-black uppercase tracking-widest text-cyan-500/60 leading-none">
-                        • {tag}
-                      </span>
-                    ))}
+                )}
+
+                <div>
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="w-14 h-14 bg-[#060e20] rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
+                      {resource.isLocked ? '🔒' : (resource.category === 'DSA' ? '📚' : resource.category === 'System Design' ? '🗺️' : resource.category === 'Resume' ? '📄' : '💎')}
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      {resource.tags?.map(tag => (
+                        <span key={tag} className={`text-[8px] font-black uppercase tracking-widest leading-none ${resource.isLocked ? 'text-amber-500/60' : 'text-cyan-500/60'}`}>
+                          • {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
+
+                  <h3 className={`text-xl font-black mb-3 transition-colors tracking-tight ${resource.isLocked ? 'text-white/60 group-hover:text-amber-400' : 'text-white group-hover:text-cyan-400'}`}>
+                    {resource.title}
+                  </h3>
+                  <p className="text-gray-500 text-xs leading-relaxed mb-8 flex-grow line-clamp-4">
+                    {resource.description}
+                  </p>
                 </div>
 
-                <h3 className="text-xl font-black text-white mb-3 group-hover:text-cyan-400 transition-colors tracking-tight">
-                  {resource.title}
-                </h3>
-                <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
-                  {resource.description}
-                </p>
-
                 <button 
-                  onClick={() => setSelectedResource(resource)}
-                  className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 group-hover:gap-4 transition-all"
+                  onClick={() => {
+                    if (resource.isLocked) {
+                      setLockedResource(resource);
+                    } else {
+                      setSelectedResource(resource);
+                    }
+                  }}
+                  className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] group-hover:gap-4 transition-all w-fit ${
+                    resource.isLocked ? 'text-amber-400' : 'text-cyan-400'
+                  }`}
                 >
-                  Launch Module <span>→</span>
+                  {resource.isLocked ? 'Unlock Module 🔒' : 'Launch Module <span>→</span>'}
                 </button>
               </div>
             )) : (
@@ -159,7 +182,6 @@ const ResourceHub = () => {
         </>
       )}
 
-
       {/* Resource Viewer Modal */}
       {selectedResource && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
@@ -202,6 +224,62 @@ const ResourceHub = () => {
                 </a>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* LOCKED RESOURCE UPSELL INTERCEPTOR MODAL */}
+      {lockedResource && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-[#0b0f19] border border-gray-800 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl text-center">
+            <button
+              onClick={() => setLockedResource(null)}
+              className="absolute top-6 right-6 text-gray-400 hover:text-white font-bold text-xl"
+            >
+              ✕
+            </button>
+
+            <div className="mb-6">
+              <span className="text-5xl">🔒</span>
+              <h3 className="text-2xl font-black mt-4 text-white">Unlock Premium Hub</h3>
+              <p className="text-xs text-amber-400 font-bold uppercase tracking-widest mt-2">
+                ⭐ Plus / 👑 Premium Level Required
+              </p>
+            </div>
+
+            <div className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-5 mb-6 text-left space-y-3.5">
+              <p className="text-xs text-gray-300 leading-relaxed">
+                The educational module <strong>"{lockedResource.title}"</strong> is exclusively available to our subscribed members.
+              </p>
+              <div className="border-t border-gray-800/80 pt-3 space-y-2">
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold">
+                  <span className="text-emerald-400">✓</span> Unlimited Advanced DSA Sheets
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold">
+                  <span className="text-emerald-400">✓</span> System Design Mastery Playbooks
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold">
+                  <span className="text-emerald-400">✓</span> AI-Powered Profile Analysis Reports
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setLockedResource(null);
+                navigate('/pricing');
+              }}
+              className="w-full py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-[#020617] font-black rounded-2xl text-xs uppercase tracking-wider transition-all transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
+            >
+              Unlock Now & Get Plus / Premium 🚀
+            </button>
+
+            <button
+              onClick={() => setLockedResource(null)}
+              className="w-full py-3 bg-gray-900/50 hover:bg-gray-900 border border-gray-800/80 text-gray-400 hover:text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all mt-3"
+            >
+              Back to Free Sheets
+            </button>
           </div>
         </div>
       )}
