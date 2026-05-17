@@ -300,67 +300,173 @@ const Pricing = () => {
       </div>
 
       {/* CHECKOUT PAYMENT DIALOG MODAL */}
-      {selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-6 animate-in fade-in duration-300">
-          <div className="bg-[#0b0f19] border border-gray-800 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl">
-            <button
-              onClick={() => setSelectedPlan(null)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-white font-bold text-xl"
-            >
-              ✕
-            </button>
+      {selectedPlan && (() => {
+        // Local checkout sub-state
+        const [method, setMethod] = useState('mock'); // 'mock', 'upi'
+        const [utr, setUtr] = useState('');
 
-            <div className="text-center mb-6">
-              <span className="text-4xl">{selectedPlan.tier === 'plus' ? '⭐' : '👑'}</span>
-              <h3 className="text-xl font-black mt-3">Confirm Checkout</h3>
-              <p className="text-xs text-gray-400 mt-1">
-                You are subscribing to {selectedPlan.name}
-              </p>
-            </div>
+        const handleUpiSubmit = async (e) => {
+          e.preventDefault();
+          if (!utr || utr.length < 12) {
+            setErrorMsg('Please enter a valid 12-digit UPI UTR number.');
+            return;
+          }
+          setLoading(true);
+          setErrorMsg('');
+          setSuccessMsg('');
+          try {
+            // Simulated real verification
+            const response = await axios.post(
+              'http://localhost:5050/api/subscription/checkout',
+              {
+                tier: selectedPlan.tier,
+                plan: duration,
+                utr: utr
+              },
+              {
+                headers: { Authorization: `Bearer ${token}` }
+              }
+            );
 
-            <div className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 mb-6">
-              <div className="flex justify-between items-center text-xs text-gray-400 mb-2">
-                <span>Selected Plan:</span>
-                <span className="font-bold text-white uppercase tracking-wider">{duration}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs text-gray-400 mb-4">
-                <span>Price:</span>
-                <span className="font-bold text-white">₹{selectedPlan.price}</span>
-              </div>
-              <div className="border-t border-gray-800 pt-3 flex justify-between items-center text-sm">
-                <span className="font-bold">Total Amount:</span>
-                <span className="font-black text-cyan-400 text-base">₹{selectedPlan.price}</span>
-              </div>
-            </div>
+            const updatedUser = {
+              ...user,
+              subscriptionTier: response.data.subscription.tier,
+              subscriptionPlan: response.data.subscription.plan,
+              subscriptionStatus: response.data.subscription.status,
+              subscriptionExpiresAt: response.data.subscription.expiresAt
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
 
-            {errorMsg && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3.5 rounded-xl mb-4 text-center">
-                {errorMsg}
-              </div>
-            )}
+            setSuccessMsg(`UTR Submitted! Your ${selectedPlan.name} is now active.`);
+            setTimeout(() => {
+              setSelectedPlan(null);
+              navigate(updatedUser.username ? `/${updatedUser.username}/dashboard` : '/dashboard');
+            }, 2500);
+          } catch (err) {
+            setErrorMsg(err.response?.data?.message || 'Verification failed. Please try again.');
+          } finally {
+            setLoading(false);
+          }
+        };
 
-            {successMsg && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs p-3.5 rounded-xl mb-4 text-center font-bold">
-                {successMsg}
-              </div>
-            )}
+        const upiId = 'shalucodethrust@okaxis';
+        const upiPayload = `upi://pay?pa=${upiId}&pn=Shalini&am=${selectedPlan.price}&cu=INR&tn=CodeProfile-${selectedPlan.tier}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiPayload)}`;
 
-            <div className="space-y-3">
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-6 animate-in fade-in duration-300">
+            <div className="bg-[#0b0f19] border border-gray-800 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl overflow-y-auto max-h-[90vh]">
               <button
-                onClick={handleCheckout}
-                disabled={loading}
-                className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 disabled:bg-gray-800 text-[#020617] disabled:text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all"
+                onClick={() => setSelectedPlan(null)}
+                className="absolute top-6 right-6 text-gray-400 hover:text-white font-bold text-xl"
               >
-                {loading ? 'Processing...' : 'Pay via Mock Checkout'}
+                ✕
               </button>
-              
-              <div className="text-center text-[9px] text-gray-500 uppercase tracking-widest mt-4">
-                UPI • Credit Card • Netbanking Simulated
+
+              <div className="text-center mb-6">
+                <span className="text-4xl">{selectedPlan.tier === 'plus' ? '⭐' : '👑'}</span>
+                <h3 className="text-xl font-black mt-3">Confirm Checkout</h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  You are subscribing to {selectedPlan.name}
+                </p>
               </div>
+
+              {/* Method Switcher Tabs */}
+              <div className="flex bg-gray-900/60 p-1 rounded-xl border border-gray-800 mb-6">
+                <button
+                  onClick={() => setMethod('mock')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                    method === 'mock' ? 'bg-cyan-500 text-[#020617]' : 'text-gray-400'
+                  }`}
+                >
+                  Mock Checkout
+                </button>
+                <button
+                  onClick={() => setMethod('upi')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                    method === 'upi' ? 'bg-emerald-500 text-[#020617]' : 'text-gray-400'
+                  }`}
+                >
+                  Direct UPI QR (0% Fee)
+                </button>
+              </div>
+
+              <div className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 mb-6">
+                <div className="flex justify-between items-center text-xs text-gray-400 mb-2">
+                  <span>Selected Plan:</span>
+                  <span className="font-bold text-white uppercase tracking-wider">{duration}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs text-gray-400 mb-4">
+                  <span>Price:</span>
+                  <span className="font-bold text-white">₹{selectedPlan.price}</span>
+                </div>
+                <div className="border-t border-gray-800 pt-3 flex justify-between items-center text-sm">
+                  <span className="font-bold">Total Amount:</span>
+                  <span className={`font-black text-base ${method === 'upi' ? 'text-emerald-400' : 'text-cyan-400'}`}>₹{selectedPlan.price}</span>
+                </div>
+              </div>
+
+              {errorMsg && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3.5 rounded-xl mb-4 text-center">
+                  {errorMsg}
+                </div>
+              )}
+
+              {successMsg && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs p-3.5 rounded-xl mb-4 text-center font-bold">
+                  {successMsg}
+                </div>
+              )}
+
+              {method === 'mock' ? (
+                <div className="space-y-3">
+                  <button
+                    onClick={handleCheckout}
+                    disabled={loading}
+                    className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 disabled:bg-gray-800 text-[#020617] disabled:text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all"
+                  >
+                    {loading ? 'Processing...' : 'Pay via Mock Checkout'}
+                  </button>
+                  <div className="text-center text-[9px] text-gray-500 uppercase tracking-widest mt-4">
+                    UPI • Credit Card • Netbanking Simulated
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleUpiSubmit} className="space-y-6 text-center">
+                  <div className="flex flex-col items-center bg-white p-4 rounded-3xl border border-gray-200 shadow-inner w-48 h-48 mx-auto">
+                    <img src={qrUrl} alt="UPI QR Code" className="w-full h-full object-contain" />
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-relaxed px-4">
+                    Scan with Google Pay, PhonePe, or Paytm and pay <strong className="text-emerald-400">₹{selectedPlan.price}</strong> directly to VPA <strong className="text-white">{upiId}</strong>. No middleman, 100% free bank-to-bank transfer!
+                  </p>
+                  
+                  <div className="text-left space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-wider text-gray-500 block">
+                      12-Digit Transaction UTR Ref No:
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={12}
+                      value={utr}
+                      onChange={(e) => setUtr(e.target.value.replace(/\D/g, ''))}
+                      placeholder="e.g. 308945671234"
+                      className="w-full px-4 py-3 bg-gray-900 border border-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl text-sm font-semibold text-white placeholder-gray-600 focus:outline-none transition-all"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 disabled:bg-gray-800 text-[#020617] disabled:text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all"
+                  >
+                    {loading ? 'Submitting...' : 'Submit UTR & Activate'}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };
