@@ -846,6 +846,45 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Upgrade Prompt Modal */}
+        {showUpgradeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-[#0b0f19] border border-cyan-500/20 rounded-[2.5rem] p-10 max-w-md w-full relative shadow-2xl shadow-cyan-950/20 text-center">
+              <button 
+                onClick={() => setShowUpgradeModal(false)}
+                className="absolute top-6 right-6 text-gray-500 hover:text-white font-bold text-lg"
+              >
+                ✕
+              </button>
+              <div className="mb-8">
+                <span className="text-5xl animate-bounce inline-block">👑</span>
+                <h3 className="text-2xl font-black text-white mt-4">Unlock AI Coach</h3>
+                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                  Your AI Profile Analysis features expert Technical Scoring, DSA Roadmaps, and Career blueprints. Upgrade to Plus or Premium to unlock this!
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <button
+                  onClick={() => {
+                    setShowUpgradeModal(false);
+                    navigate('/pricing');
+                  }}
+                  className="w-full py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 text-[#020617] hover:from-cyan-400 hover:to-emerald-400 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
+                >
+                  View Premium Plans 🚀
+                </button>
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="w-full py-3 bg-gray-950 hover:bg-gray-800 text-gray-400 hover:text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mt-40 pt-12 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-8 opacity-50">
            <p className="text-[9px] font-black uppercase tracking-[0.6em] text-gray-500">
              © 2026 CodeProfile Command Center . v3.0 Release
