@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getResources } from '../services/api';
+import { getResources, toggleBookmark, recordReadingHistory } from '../services/api';
 
 const ResourceHub = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -43,6 +44,31 @@ const ResourceHub = () => {
       console.error('Error fetching resources:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Toggle bookmark handler with instant responsive state mapping
+  const handleToggleBookmark = async (id) => {
+    try {
+      const res = await toggleBookmark(id);
+      setResources(prev => prev.map(resource => {
+        if (resource._id === id) {
+          return { ...resource, isBookmarked: res.bookmarked };
+        }
+        return resource;
+      }));
+    } catch (error) {
+      console.error("Failed to toggle bookmark:", error);
+    }
+  };
+
+  // Launch module and log in reading history
+  const handleLaunchModule = async (resource) => {
+    setSelectedResource(resource);
+    try {
+      await recordReadingHistory(resource._id);
+    } catch (error) {
+      console.error("Failed to update history:", error);
     }
   };
 
@@ -94,9 +120,30 @@ const ResourceHub = () => {
               >
                 {/* Lock Badge */}
                 {resource.isLocked && (
-                  <div className="absolute top-6 right-6 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1 shadow-lg">
+                  <div className="absolute top-6 left-6 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1 shadow-lg">
                     <span>🔒 Premium</span>
                   </div>
+                )}
+
+                {/* Bookmark Toggle Icon (Interactive, absolute top-right) */}
+                {token && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleBookmark(resource._id);
+                    }}
+                    className={`absolute p-2.5 rounded-xl border backdrop-blur-3xl transition-all duration-300 z-10 cursor-pointer ${
+                      resource.isBookmarked 
+                        ? 'bg-cyan-500/10 border-cyan-400/50 text-cyan-400 shadow-md shadow-cyan-500/10' 
+                        : 'bg-[#0f172a]/40 border-gray-800 text-gray-500 hover:text-white hover:border-gray-700'
+                    }`}
+                    style={{ 
+                      top: resource.isLocked ? '3.5rem' : '1.5rem',
+                      right: '1.5rem'
+                    }}
+                  >
+                    {resource.isBookmarked ? '★' : '☆'}
+                  </button>
                 )}
 
                 <div>
@@ -104,7 +151,7 @@ const ResourceHub = () => {
                     <div className="w-14 h-14 bg-[#060e20] rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
                       {resource.isLocked ? '🔒' : (resource.category === 'DSA' ? '📚' : resource.category === 'System Design' ? '🗺️' : resource.category === 'Resume' ? '📄' : '💎')}
                     </div>
-                    <div className="flex flex-col items-end gap-1">
+                    <div className="flex flex-col items-end gap-1 pr-12">
                       {resource.tags?.map(tag => (
                         <span key={tag} className={`text-[8px] font-black uppercase tracking-widest leading-none ${resource.isLocked ? 'text-amber-500/60' : 'text-cyan-500/60'}`}>
                           • {tag}
@@ -126,10 +173,10 @@ const ResourceHub = () => {
                     if (resource.isLocked) {
                       setLockedResource(resource);
                     } else {
-                      setSelectedResource(resource);
+                      handleLaunchModule(resource);
                     }
                   }}
-                  className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] group-hover:gap-4 transition-all w-fit ${
+                  className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] group-hover:gap-4 transition-all w-fit cursor-pointer ${
                     resource.isLocked ? 'text-amber-400' : 'text-cyan-400'
                   }`}
                 >
@@ -185,10 +232,10 @@ const ResourceHub = () => {
       {/* Resource Viewer Modal */}
       {selectedResource && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
-          <div className="bg-[#0b1121] border border-gray-800 rounded-[3rem] w-full max-w-5xl p-8 md:p-16 relative animate-in zoom-in-95 duration-300 my-10 max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <div className="bg-[#0b1121] border border-gray-800 rounded-[3rem] w-full max-w-5xl p-8 md:p-16 relative animate-in zoom-in-95 duration-300 my-10 max-h-[90vh] overflow-y-auto custom-scrollbar text-left">
             <button 
               onClick={() => setSelectedResource(null)}
-              className="absolute top-10 right-10 text-gray-500 hover:text-white transition-colors text-3xl"
+              className="absolute top-10 right-10 text-gray-500 hover:text-white transition-colors text-3xl cursor-pointer"
             >
               ✕
             </button>
@@ -234,7 +281,7 @@ const ResourceHub = () => {
           <div className="bg-[#0b0f19] border border-gray-800 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl text-center">
             <button
               onClick={() => setLockedResource(null)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-white font-bold text-xl"
+              className="absolute top-6 right-6 text-gray-400 hover:text-white font-bold text-xl cursor-pointer"
             >
               ✕
             </button>
@@ -269,14 +316,14 @@ const ResourceHub = () => {
                 setLockedResource(null);
                 navigate('/pricing');
               }}
-              className="w-full py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-[#020617] font-black rounded-2xl text-xs uppercase tracking-wider transition-all transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
+              className="w-full py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-[#020617] font-black rounded-2xl text-xs uppercase tracking-wider transition-all transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20 cursor-pointer"
             >
               Unlock Now & Get Plus / Premium 🚀
             </button>
 
             <button
               onClick={() => setLockedResource(null)}
-              className="w-full py-3 bg-gray-900/50 hover:bg-gray-900 border border-gray-800/80 text-gray-400 hover:text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all mt-3"
+              className="w-full py-3 bg-gray-900/50 hover:bg-gray-900 border border-gray-800/80 text-gray-400 hover:text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all mt-3 cursor-pointer"
             >
               Back to Free Sheets
             </button>

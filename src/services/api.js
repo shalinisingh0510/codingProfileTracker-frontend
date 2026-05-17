@@ -119,6 +119,33 @@ export const deleteResource = async (id) => {
   return response.data;
 };
 
+// Bookmark & Reading History API services
+export const toggleBookmark = async (id) => {
+  const response = await api.post(`/resources/${id}/bookmark`);
+  return response.data;
+};
+
+export const recordReadingHistory = async (id) => {
+  const response = await api.post(`/resources/${id}/read`);
+  return response.data;
+};
+
+export const getBookmarks = async () => {
+  const response = await api.get('/resources/bookmarked');
+  return response.data;
+};
+
+export const getReadingHistory = async () => {
+  const response = await api.get('/resources/history');
+  return response.data;
+};
+
+// AI services
+export const getLastAiReport = async () => {
+  const response = await api.get('/ai/last-report');
+  return response.data;
+};
+
 // User Search & Public Profile Services
 export const searchUsers = async (query) => {
   const response = await api.get('/users/search', { params: { q: query } });
