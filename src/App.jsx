@@ -10,6 +10,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import ResourcesPage from './pages/ResourcesPage';
 import ResourceDetailPage from './pages/ResourceDetailPage';
 import AiReportPage from './pages/AiReportPage';
+import LatestAiReportPage from './pages/LatestAiReportPage';
+import LibraryPage from './pages/LibraryPage';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import {
@@ -32,6 +34,22 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/resources/:slug" element={<ResourceDetailPage />} />
+        <Route
+          path="/library"
+          element={
+            <ProtectedRoute>
+              <LibraryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-report/latest"
+          element={
+            <ProtectedRoute>
+              <LatestAiReportPage />
+            </ProtectedRoute>
+          }
+        />
         <Route 
           path="/ai-report/:id" 
           element={

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { searchUsers, getLastAiReport, getBookmarks, getReadingHistory } from '../services/api';
-import Markdown from 'react-markdown';
+import { searchUsers } from '../services/api';
 
 const RESOURCE_CATEGORIES = ['All', 'DSA', 'System Design', 'Backend', 'Frontend', 'Full stack', 'Cloud', 'Ci/cd', 'Misc'];
 
@@ -18,18 +17,6 @@ const Navbar = () => {
   
   const [showDropdown, setShowDropdown] = useState(false);
   
-  // AI report states
-  const [aiReport, setAiReport] = useState(null);
-  const [reportLoading, setReportLoading] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-
-  // Bookmarks & History states
-  const [bookmarks, setBookmarks] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [bookmarksLoading, setBookmarksLoading] = useState(false);
-  const [showBookmarksModal, setShowBookmarksModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('bookmarks');
-
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
 
@@ -81,43 +68,6 @@ const Navbar = () => {
     navigate(`/${resultUsername}/dashboard`);
   };
 
-  const handleFetchLastReport = async () => {
-    setShowDropdown(false);
-    try {
-      const data = await getLastAiReport();
-      if (data && data.id) {
-        navigate(`/ai-report/${data.id}`);
-      } else {
-        setReportLoading(true);
-        setShowReportModal(true);
-        if (data && data.report) {
-          setAiReport(data.report);
-        } else {
-          setAiReport("### No Analysis Found\n\nYou haven't analyzed your profile yet. Go to your Dashboard and click **Analyze Profile** to generate your first report.");
-        }
-        setReportLoading(false);
-      }
-    } catch (error) {
-      setShowReportModal(true);
-      setAiReport("### Error\n\nFailed to load report. Please try again.");
-    }
-  };
-
-  const handleOpenBookmarks = async () => {
-    setShowDropdown(false);
-    setShowBookmarksModal(true);
-    setBookmarksLoading(true);
-    try {
-      const [bookmarkedData, historyData] = await Promise.all([getBookmarks(), getReadingHistory()]);
-      setBookmarks(bookmarkedData || []);
-      setHistory(historyData || []);
-    } catch (error) {
-      console.error("Failed to retrieve bookmarks/history:", error);
-    } finally {
-      setBookmarksLoading(false);
-    }
-  };
-
   const getUserInitials = () => {
     if (!user?.name) return 'U';
     const parts = user.name.trim().split(/\s+/);
@@ -140,12 +90,6 @@ const Navbar = () => {
     if (tier === 'premium') return 'ring-2 ring-yellow-500/60';
     if (tier === 'plus') return 'ring-2 ring-cyan-400/60';
     return 'ring-1 ring-gray-700';
-  };
-
-  const navigateToResource = (resource) => {
-    setShowBookmarksModal(false);
-    const identifier = resource.slug || resource._id;
-    navigate(`/resources/${identifier}`);
   };
 
   return (
@@ -270,19 +214,21 @@ const Navbar = () => {
                     Settings
                   </Link>
 
-                  <button
-                    onClick={handleOpenBookmarks}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-gray-300 hover:text-white text-left transition-colors cursor-pointer"
+                  <Link
+                    to="/library?tab=bookmarks"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-gray-300 hover:text-white transition-colors"
                   >
                     Bookmarks & History
-                  </button>
+                  </Link>
 
-                  <button
-                    onClick={handleFetchLastReport}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-gray-300 hover:text-white text-left transition-colors cursor-pointer"
+                  <Link
+                    to="/ai-report/latest"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-gray-300 hover:text-white transition-colors"
                   >
                     Last AI Report
-                  </button>
+                  </Link>
 
                   <Link 
                     to="/pricing" 
@@ -328,111 +274,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* AI Report Modal */}
-      {showReportModal && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
-          <div className="bg-[#0b1121] border border-gray-800 rounded-3xl w-full max-w-4xl p-8 md:p-14 relative my-10 max-h-[90vh] overflow-y-auto text-left">
-            <button 
-              onClick={() => setShowReportModal(false)}
-              className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors text-xl cursor-pointer"
-            >
-              ✕
-            </button>
-            <div className="mb-10 border-b border-slate-800/60 pb-5">
-              <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-cyan-500/20 mb-4 inline-block">
-                AI Assessment
-              </span>
-              <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-                Profile Analysis Report
-              </h2>
-            </div>
-            {reportLoading ? (
-              <div className="flex flex-col items-center justify-center py-24 gap-3">
-                <div className="w-10 h-10 border-3 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
-                <p className="text-gray-500 text-sm">Loading...</p>
-              </div>
-            ) : (
-              <div className="prose prose-invert prose-cyan max-w-none text-gray-300 leading-relaxed text-base">
-                <Markdown>{aiReport}</Markdown>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Bookmarks & History Modal */}
-      {showBookmarksModal && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
-          <div className="bg-[#0b1121] border border-gray-800 rounded-3xl w-full max-w-3xl p-8 md:p-10 relative my-10 max-h-[85vh] overflow-y-auto text-left flex flex-col gap-5">
-            <button 
-              onClick={() => setShowBookmarksModal(false)}
-              className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors text-xl cursor-pointer"
-            >
-              ✕
-            </button>
-
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                Bookmarks & History
-              </h2>
-              <p className="text-gray-500 text-xs mt-1">Your saved resources and reading activity.</p>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-4 border-b border-slate-800/60">
-              <button
-                onClick={() => setActiveTab('bookmarks')}
-                className={`pb-2.5 text-xs font-bold uppercase tracking-wider transition-all relative cursor-pointer ${
-                  activeTab === 'bookmarks' ? 'text-cyan-400' : 'text-gray-500 hover:text-white'
-                }`}
-              >
-                Bookmarks ({bookmarks.length})
-                {activeTab === 'bookmarks' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 rounded-full"></span>}
-              </button>
-              <button
-                onClick={() => setActiveTab('history')}
-                className={`pb-2.5 text-xs font-bold uppercase tracking-wider transition-all relative cursor-pointer ${
-                  activeTab === 'history' ? 'text-cyan-400' : 'text-gray-500 hover:text-white'
-                }`}
-              >
-                History ({history.length})
-                {activeTab === 'history' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 rounded-full"></span>}
-              </button>
-            </div>
-
-            {bookmarksLoading ? (
-              <div className="flex justify-center py-16">
-                <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
-                {(activeTab === 'bookmarks' ? bookmarks : history).length > 0 ? (
-                  (activeTab === 'bookmarks' ? bookmarks : history).map(resource => (
-                    <button
-                      key={resource._id}
-                      onClick={() => navigateToResource(resource)}
-                      className="w-full p-4 bg-slate-900/30 border border-slate-800/60 rounded-xl flex items-center justify-between hover:border-cyan-500/20 hover:bg-slate-900/50 transition-all text-left cursor-pointer gap-4"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[9px] font-bold uppercase tracking-widest text-cyan-500/60">{resource.category}</span>
-                          {resource.isLocked && <span className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70">Locked</span>}
-                        </div>
-                        <h4 className="text-sm font-bold text-white truncate">{resource.title}</h4>
-                      </div>
-                      <span className="text-gray-600 text-xs shrink-0">→</span>
-                    </button>
-                  ))
-                ) : (
-                  <div className="text-center py-14 text-gray-600 text-sm italic">
-                    {activeTab === 'bookmarks' ? 'No bookmarks yet.' : 'No reading history yet.'}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </nav>
   );
 };
