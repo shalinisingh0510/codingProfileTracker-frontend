@@ -8,6 +8,7 @@ import Profile from './pages/Profile';
 import Pricing from './pages/Pricing';
 import AdminDashboard from './pages/AdminDashboard';
 import ResourcesPage from './pages/ResourcesPage';
+import ResourceDetailPage from './pages/ResourceDetailPage';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/resources/:slug" element={<ResourceDetailPage />} />
         <Route path="/dashboard" element={<LegacyDashboardRedirect />} />
         <Route path="/profile" element={<LegacyProfileRedirect />} />
         <Route 

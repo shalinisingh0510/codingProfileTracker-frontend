@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getResources, toggleBookmark, recordReadingHistory } from '../services/api';
+import { getResources, toggleBookmark } from '../services/api';
 
 const ResourcesPage = () => {
   const navigate = useNavigate();
@@ -10,8 +10,7 @@ const ResourcesPage = () => {
 
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedResource, setSelectedResource] = useState(null);
-  const [lockedResource, setLockedResource] = useState(null); // Tracks the resource prompting an upsell
+  const [lockedResource, setLockedResource] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResources, setTotalResources] = useState(0);
@@ -24,15 +23,13 @@ const ResourcesPage = () => {
 
   const handleCategoryChange = (cat) => {
     setSearchParams({ category: cat });
-    setCurrentPage(1); // Reset to first page when category changes
+    setCurrentPage(1);
   };
 
   const fetchResources = async () => {
     setLoading(true);
     try {
       const data = await getResources(activeCategory, currentPage, 9);
-      
-      // Defensive handling of response format
       if (Array.isArray(data)) {
         setResources(data);
         setTotalPages(1);
@@ -49,8 +46,9 @@ const ResourcesPage = () => {
     }
   };
 
-  // Toggle bookmark handler with instant responsive state mapping
-  const handleToggleBookmark = async (id) => {
+  const handleToggleBookmark = async (e, id) => {
+    e.stopPropagation();
+    e.preventDefault();
     try {
       const res = await toggleBookmark(id);
       setResources(prev => prev.map(resource => {
@@ -64,45 +62,46 @@ const ResourcesPage = () => {
     }
   };
 
-  // Launch module and log in reading history
-  const handleLaunchModule = async (resource) => {
-    setSelectedResource(resource);
-    try {
-      await recordReadingHistory(resource._id);
-    } catch (error) {
-      console.error("Failed to update history:", error);
+  const handleCardClick = (resource) => {
+    if (resource.isLocked) {
+      setLockedResource(resource);
+    } else {
+      // Navigate to full page using slug (or fallback to _id)
+      const identifier = resource.slug || resource._id;
+      navigate(`/resources/${identifier}`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white pt-32 pb-24 px-6 md:px-12 relative overflow-hidden">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-900/10 blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-900/10 blur-[120px] pointer-events-none"></div>
+    <div className="min-h-screen bg-[#020617] text-white pt-28 pb-24 px-6 md:px-12 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-900/8 blur-[140px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-900/8 blur-[140px] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
-               <span className="h-px w-12 bg-cyan-400"></span>
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 font-mono">Expert Syllabus logs</span>
+              <span className="h-px w-12 bg-cyan-400"></span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400">Knowledge Base</span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white">
               Resource Hub<span className="text-cyan-400">.</span>
-            </h2>
+            </h1>
             <p className="text-gray-500 text-sm mt-3 max-w-xl leading-relaxed">
-              Curated master sheets, full stack playbooks, system design patterns, and computer science study cards prepared by engineering coaches.
+              Curated master sheets, full-stack playbooks, system design patterns, and study guides prepared by engineering coaches.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2 p-2 bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl overflow-x-auto max-w-full">
+          <div className="flex flex-wrap gap-1.5 p-1.5 bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-2xl">
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => handleCategoryChange(cat)}
-                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer whitespace-nowrap ${
-                  activeCategory === cat 
-                  ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20' 
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer whitespace-nowrap ${
+                  activeCategory === cat
+                  ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -112,125 +111,114 @@ const ResourcesPage = () => {
           </div>
         </div>
 
+        {/* Grid */}
         {loading ? (
           <div className="flex justify-center py-40">
-             <div className="w-12 h-12 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {resources.length > 0 ? resources.map(resource => (
-                <div 
-                  key={resource._id} 
-                  className={`group relative bg-slate-900/20 border rounded-[2.5rem] p-8 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between min-h-[320px] ${
-                    resource.isLocked 
-                      ? 'border-amber-500/10 hover:border-amber-500/30 hover:bg-amber-950/5' 
-                      : 'border-gray-800 hover:bg-slate-900/40 hover:border-cyan-500/30'
+                <div
+                  key={resource._id}
+                  onClick={() => handleCardClick(resource)}
+                  className={`group relative bg-slate-900/20 border rounded-3xl p-7 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between min-h-[300px] cursor-pointer ${
+                    resource.isLocked
+                      ? 'border-amber-500/10 hover:border-amber-500/25'
+                      : 'border-gray-800 hover:border-cyan-500/30 hover:bg-slate-900/30'
                   }`}
                 >
                   {/* Lock Badge */}
                   {resource.isLocked && (
-                    <div className="absolute top-6 left-6 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1 shadow-lg">
-                      <span>🔒 Premium</span>
+                    <div className="absolute top-5 left-5 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest text-amber-400 shadow-lg">
+                      Premium
                     </div>
                   )}
 
-                  {/* Bookmark Toggle Icon */}
+                  {/* Bookmark */}
                   {token && (
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleBookmark(resource._id);
-                      }}
-                      className={`absolute p-2.5 rounded-xl border backdrop-blur-3xl transition-all duration-300 z-10 cursor-pointer ${
-                        resource.isBookmarked 
-                          ? 'bg-cyan-500/10 border-cyan-400/50 text-cyan-400 shadow-md shadow-cyan-500/10' 
-                          : 'bg-slate-900/40 border-gray-800 text-gray-500 hover:text-white hover:border-gray-700'
+                      onClick={(e) => handleToggleBookmark(e, resource._id)}
+                      className={`absolute top-5 right-5 w-9 h-9 rounded-xl border flex items-center justify-center text-sm transition-all z-10 cursor-pointer ${
+                        resource.isBookmarked
+                          ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-400'
+                          : 'bg-slate-950/60 border-gray-800 text-gray-600 hover:text-white hover:border-gray-700'
                       }`}
-                      style={{ 
-                        top: resource.isLocked ? '3.5rem' : '1.5rem',
-                        right: '1.5rem'
-                      }}
                     >
                       {resource.isBookmarked ? '★' : '☆'}
                     </button>
                   )}
 
-                  <div>
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="w-14 h-14 bg-slate-950 rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-gray-800">
-                        {resource.isLocked ? '🔒' : (resource.category === 'DSA' ? '📚' : resource.category === 'System Design' ? '🗺️' : resource.category === 'Resume' ? '📄' : '💎')}
-                      </div>
-                      <div className="flex flex-col items-end gap-1 pr-12">
-                        {resource.tags?.map(tag => (
-                          <span key={tag} className={`text-[8px] font-black uppercase tracking-widest leading-none ${resource.isLocked ? 'text-amber-500/60' : 'text-cyan-500/60'}`}>
-                            • {tag}
-                          </span>
-                        ))}
-                      </div>
+                  <div className="mt-4">
+                    <div className="flex items-center gap-2 mb-5">
+                      <span className="px-3 py-1 bg-slate-950 border border-gray-800 rounded-lg text-[9px] font-bold uppercase tracking-widest text-cyan-500/70">
+                        {resource.category}
+                      </span>
+                      {resource.tags?.slice(0, 2).map(tag => (
+                        <span key={tag} className="text-[8px] font-bold uppercase tracking-widest text-gray-600">
+                          {tag}
+                        </span>
+                      ))}
                     </div>
 
-                    <h3 className={`text-xl font-black mb-3 transition-colors tracking-tight ${resource.isLocked ? 'text-white/60 group-hover:text-amber-400' : 'text-white group-hover:text-cyan-400'}`}>
+                    <h3 className={`text-lg font-black mb-2 tracking-tight leading-snug transition-colors ${
+                      resource.isLocked ? 'text-white/50 group-hover:text-amber-400' : 'text-white group-hover:text-cyan-400'
+                    }`}>
                       {resource.title}
                     </h3>
-                    <p className="text-gray-500 text-xs leading-relaxed mb-8 flex-grow line-clamp-4">
+                    <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">
                       {resource.description}
                     </p>
                   </div>
 
-                  <button 
-                    onClick={() => {
-                      if (resource.isLocked) {
-                        setLockedResource(resource);
-                      } else {
-                        handleLaunchModule(resource);
-                      }
-                    }}
-                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] group-hover:gap-4 transition-all w-fit cursor-pointer ${
-                      resource.isLocked ? 'text-amber-400' : 'text-cyan-400'
-                    }`}
-                  >
-                    {resource.isLocked ? 'Unlock Module 🔒' : 'Launch Module <span>→</span>'}
-                  </button>
+                  <div className="mt-6 flex items-center justify-between">
+                    <span className={`text-[10px] font-bold uppercase tracking-[0.15em] ${
+                      resource.isLocked ? 'text-amber-400/80' : 'text-cyan-400/80'
+                    }`}>
+                      {resource.isLocked ? 'Unlock to read' : 'Read article →'}
+                    </span>
+                    {resource.author?.name && (
+                      <span className="text-[9px] text-gray-600 font-medium">
+                        {resource.author.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )) : (
-                <div className="col-span-full text-center py-24 bg-slate-900/10 rounded-[2.5rem] border border-dashed border-gray-800">
-                   <p className="text-gray-500 font-medium italic text-sm">No curriculum modules found in this category.</p>
+                <div className="col-span-full text-center py-24 bg-slate-900/10 rounded-3xl border border-dashed border-gray-800">
+                  <p className="text-gray-500 text-sm italic">No resources found in this category.</p>
                 </div>
               )}
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-20">
+              <div className="flex justify-center items-center gap-3 mt-16">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="w-12 h-12 bg-slate-900/40 border border-gray-800 rounded-2xl flex items-center justify-center text-gray-400 hover:text-white hover:border-cyan-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  className="w-10 h-10 bg-slate-900/40 border border-gray-800 rounded-xl flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer text-sm"
                 >
                   ←
                 </button>
-                
-                <div className="flex gap-2">
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-12 h-12 rounded-2xl text-[10px] font-black transition-all cursor-pointer ${
-                        currentPage === i + 1
-                        ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20'
-                        : 'bg-slate-900/20 text-gray-500 border border-gray-800 hover:border-gray-700 hover:text-white'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-10 h-10 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      currentPage === i + 1
+                      ? 'bg-cyan-500 text-black'
+                      : 'bg-slate-900/20 text-gray-500 border border-gray-800 hover:text-white'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="w-12 h-12 bg-slate-900/40 border border-gray-800 rounded-2xl flex items-center justify-center text-gray-400 hover:text-white hover:border-cyan-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  className="w-10 h-10 bg-slate-900/40 border border-gray-800 rounded-xl flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer text-sm"
                 >
                   →
                 </button>
@@ -240,103 +228,50 @@ const ResourcesPage = () => {
         )}
       </div>
 
-      {/* Resource Viewer Modal */}
-      {selectedResource && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
-          <div className="bg-[#0b1121] border border-gray-800 rounded-[3rem] w-full max-w-5xl p-8 md:p-16 relative animate-in zoom-in-95 duration-300 my-10 max-h-[90vh] overflow-y-auto custom-scrollbar text-left">
-            <button 
-              onClick={() => setSelectedResource(null)}
-              className="absolute top-10 right-10 text-gray-500 hover:text-white transition-colors text-3xl cursor-pointer"
-            >
-              ✕
-            </button>
-
-            <div className="mb-12">
-              <span className="px-4 py-1.5 bg-cyan-500/10 text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-cyan-500/20 mb-6 inline-block">
-                {selectedResource.category}
-              </span>
-              <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter mb-4">
-                {selectedResource.title}
-              </h2>
-              <div className="flex items-center gap-4 text-xs text-gray-500 font-bold">
-                <span>By {selectedResource.author?.name || 'Admin'}</span>
-                <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
-                <span>{new Date(selectedResource.createdAt).toLocaleDateString()}</span>
-              </div>
-            </div>
-
-            <div 
-              className="prose prose-invert prose-cyan max-w-none text-gray-300 leading-loose text-lg"
-              dangerouslySetInnerHTML={{ __html: selectedResource.content }}
-            />
-
-            {selectedResource.link && (
-              <div className="mt-16 pt-10 border-t border-gray-800">
-                <a 
-                  href={selectedResource.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all"
-                >
-                   External Material Source ↗
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* LOCKED RESOURCE UPSELL INTERCEPTOR MODAL */}
+      {/* Locked Resource Upsell Modal */}
       {lockedResource && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-[#0b0f19] border border-gray-800 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl text-center animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md">
+          <div className="bg-[#0b0f19] border border-gray-800 rounded-3xl p-8 max-w-md w-full relative shadow-2xl text-center">
             <button
               onClick={() => setLockedResource(null)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-white font-bold text-xl cursor-pointer"
+              className="absolute top-5 right-5 text-gray-500 hover:text-white text-lg cursor-pointer"
             >
               ✕
             </button>
 
             <div className="mb-6">
-              <span className="text-5xl">🔒</span>
-              <h3 className="text-2xl font-black mt-4 text-white">Unlock Premium Hub</h3>
-              <p className="text-xs text-amber-400 font-bold uppercase tracking-widest mt-2">
-                ⭐ Plus / 👑 Premium Level Required
+              <div className="w-16 h-16 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center text-3xl mb-4">
+                🔒
+              </div>
+              <h3 className="text-xl font-black text-white">Premium Content</h3>
+              <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                <strong>"{lockedResource.title}"</strong> requires a Plus or Premium subscription.
               </p>
             </div>
 
-            <div className="bg-slate-900/60 border border-gray-800 rounded-2xl p-5 mb-6 text-left space-y-3.5">
-              <p className="text-xs text-gray-300 leading-relaxed">
-                The educational module <strong>"{lockedResource.title}"</strong> is exclusively available to our subscribed members.
-              </p>
-              <div className="border-t border-gray-800/80 pt-3 space-y-2">
-                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold">
-                  <span className="text-emerald-400 font-mono">✓</span> Unlimited Advanced DSA Sheets
-                </div>
-                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold">
-                  <span className="text-emerald-400 font-mono">✓</span> System Design Mastery Playbooks
-                </div>
-                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold">
-                  <span className="text-emerald-400 font-mono">✓</span> AI-Powered Profile Analysis Reports
-                </div>
+            <div className="space-y-2 mb-6">
+              <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
+                <span className="text-emerald-400">✓</span> All advanced DSA sheets
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
+                <span className="text-emerald-400">✓</span> System design playbooks
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
+                <span className="text-emerald-400">✓</span> AI profile analysis
               </div>
             </div>
 
             <button
-              onClick={() => {
-                setLockedResource(null);
-                navigate('/pricing');
-              }}
-              className="w-full py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-[#020617] font-black rounded-2xl text-xs uppercase tracking-wider transition-all transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20 cursor-pointer"
+              onClick={() => { setLockedResource(null); navigate('/pricing'); }}
+              className="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-emerald-500 text-[#020617] font-black rounded-2xl text-xs uppercase tracking-wider cursor-pointer hover:from-cyan-400 hover:to-emerald-400 transition-all"
             >
-              Unlock Now & Get Plus / Premium 🚀
+              View Plans
             </button>
-
             <button
               onClick={() => setLockedResource(null)}
-              className="w-full py-3 bg-slate-900/50 hover:bg-slate-900 border border-gray-800 text-gray-400 hover:text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all mt-3 cursor-pointer"
+              className="w-full py-3 bg-slate-900 border border-gray-800 text-gray-400 hover:text-white font-semibold rounded-2xl text-xs uppercase tracking-wider mt-2 cursor-pointer transition-colors"
             >
-              Back to Free Sheets
+              Close
             </button>
           </div>
         </div>

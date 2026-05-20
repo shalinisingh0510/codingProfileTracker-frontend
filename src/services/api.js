@@ -146,6 +146,11 @@ export const getLastAiReport = async () => {
   return response.data;
 };
 
+export const getResourceBySlug = async (slug) => {
+  const response = await api.get(`/resources/slug/${slug}`);
+  return response.data;
+};
+
 // User Search & Public Profile Services
 export const searchUsers = async (query) => {
   const response = await api.get('/users/search', { params: { q: query } });
