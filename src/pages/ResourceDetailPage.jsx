@@ -13,6 +13,7 @@ const ResourceDetailPage = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchResource = async () => {
       setLoading(true);
       setError(null);
@@ -175,7 +176,7 @@ const ResourceDetailPage = () => {
         />
 
         {/* External link */}
-        {resource.link && (
+        {resource.link && (resource.title.toLowerCase().includes('striver') || resource.title.toLowerCase().includes('fraz') || resource.title.toLowerCase().includes('babbar')) && (
           <div className="mt-20 pt-10 border-t border-gray-800/60">
             <a
               href={resource.link}
