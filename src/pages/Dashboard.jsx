@@ -741,13 +741,13 @@ const Dashboard = () => {
                   icon: "🧠",
                   tag: "Processing"
                 };
-              } else if (aiReport && !aiReport.includes('Error')) {
+              } else if (user?.lastAiReportCreatedAt) {
                 insight = {
-                  title: "AI Technical\nAssessment Ready",
-                  description: "Your personalized career roadmap and technical skill-gap analysis have been generated.",
-                  ctaText: "Read AI Report",
+                  title: "Previous AI\nAssessment Saved",
+                  description: "You have a previously saved profile assessment. You can view it from the navigation dropdown.",
+                  ctaText: "Re-analyze Profile",
                   icon: "✨",
-                  tag: "AI Recommendation"
+                  tag: "AI Memory"
                 };
               } else if (totalSolved > 0 && totalSolved < 50) {
                 insight = {
