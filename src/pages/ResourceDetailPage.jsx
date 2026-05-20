@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getResourceBySlug, toggleBookmark, recordReadingHistory } from '../services/api';
 
@@ -11,6 +11,21 @@ const ResourceDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const articleRef = useRef(null);
+
+  // Move practice links to bottom after render
+  useEffect(() => {
+    if (articleRef.current) {
+      const sections = articleRef.current.querySelectorAll('.rh-sync-section');
+      sections.forEach(section => {
+        const kicker = section.querySelector('.rh-sync-kicker');
+        if (kicker && kicker.textContent.trim().toLowerCase().includes('practice link')) {
+          // Append to end of article
+          articleRef.current.appendChild(section);
+        }
+      });
+    }
+  }, [resource]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -171,6 +186,7 @@ const ResourceDetailPage = () => {
 
         {/* Content */}
         <article
+          ref={articleRef}
           className="prose prose-invert prose-cyan max-w-none text-gray-300 leading-[1.9] text-[17px] prose-headings:tracking-tight prose-headings:font-black prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline prose-strong:text-white prose-code:text-cyan-300 prose-code:bg-slate-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-sm"
           dangerouslySetInnerHTML={{ __html: resource.content }}
         />
