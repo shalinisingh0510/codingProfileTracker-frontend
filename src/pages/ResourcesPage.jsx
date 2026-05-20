@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getResources, toggleBookmark } from '../services/api';
 
@@ -7,6 +7,7 @@ const ResourcesPage = () => {
   const token = localStorage.getItem('token');
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get('category') || 'All';
+  const activeSearch = searchParams.get('q') || '';
 
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,36 +15,70 @@ const ResourcesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResources, setTotalResources] = useState(0);
+  const [searchInput, setSearchInput] = useState(activeSearch);
 
   const categories = ['All', 'DSA', 'System Design', 'Backend', 'Frontend', 'Full stack', 'Cloud', 'Ci/cd', 'Misc'];
 
   useEffect(() => {
+    setSearchInput(activeSearch);
+  }, [activeSearch]);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      setLoading(true);
+      try {
+        const data = await getResources(activeCategory, currentPage, 9, activeSearch);
+        if (Array.isArray(data)) {
+          setResources(data);
+          setTotalPages(1);
+          setTotalResources(data.length);
+        } else {
+          setResources(data.resources || []);
+          setTotalPages(data.pages || 1);
+          setTotalResources(data.total || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching resources:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchResources();
-  }, [activeCategory, currentPage]);
+  }, [activeCategory, activeSearch, currentPage]);
 
   const handleCategoryChange = (cat) => {
-    setSearchParams({ category: cat });
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('category', cat);
+    if (!activeSearch) {
+      nextParams.delete('q');
+    }
+    setSearchParams(nextParams);
     setCurrentPage(1);
   };
 
-  const fetchResources = async () => {
-    setLoading(true);
-    try {
-      const data = await getResources(activeCategory, currentPage, 9);
-      if (Array.isArray(data)) {
-        setResources(data);
-        setTotalPages(1);
-        setTotalResources(data.length);
-      } else {
-        setResources(data.resources || []);
-        setTotalPages(data.pages || 1);
-        setTotalResources(data.total || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching resources:', error);
-    } finally {
-      setLoading(false);
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+
+    const trimmedSearch = searchInput.trim();
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (trimmedSearch) {
+      nextParams.set('q', trimmedSearch);
+    } else {
+      nextParams.delete('q');
     }
+
+    setSearchParams(nextParams);
+    setCurrentPage(1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('q');
+    setSearchParams(nextParams);
+    setCurrentPage(1);
   };
 
   const handleToggleBookmark = async (e, id) => {
@@ -92,6 +127,14 @@ const ResourcesPage = () => {
             <p className="text-gray-500 text-sm mt-3 max-w-xl leading-relaxed">
               Curated master sheets, full-stack playbooks, system design patterns, and study guides prepared by engineering coaches.
             </p>
+            <div className="flex flex-wrap items-center gap-3 mt-5 text-[10px] font-black uppercase tracking-[0.25em]">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                Free content first
+              </span>
+              <span className="text-gray-600">
+                {totalResources} {totalResources === 1 ? 'blog' : 'blogs'} found
+              </span>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-1.5 p-1.5 bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-2xl">
@@ -110,6 +153,38 @@ const ResourcesPage = () => {
             ))}
           </div>
         </div>
+
+        <form
+          onSubmit={handleSearchSubmit}
+          className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-4 items-center bg-slate-900/30 border border-white/5 rounded-3xl p-4 md:p-5"
+        >
+          <div className="relative">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search blogs by title, topic, tag, or category..."
+              className="w-full px-5 py-4 rounded-2xl bg-[#0b1121] border border-gray-800 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/40 transition-colors"
+            />
+          </div>
+          <div className="flex gap-2 justify-start lg:justify-end">
+            <button
+              type="submit"
+              className="px-5 py-3 rounded-2xl bg-cyan-500 text-black text-[11px] font-black uppercase tracking-widest hover:bg-cyan-400 transition-colors cursor-pointer"
+            >
+              Search
+            </button>
+            {activeSearch && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="px-5 py-3 rounded-2xl bg-slate-900/70 border border-gray-800 text-gray-300 text-[11px] font-black uppercase tracking-widest hover:text-white transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </form>
 
         {/* Grid */}
         {loading ? (
@@ -155,6 +230,11 @@ const ResourcesPage = () => {
                       <span className="px-3 py-1 bg-slate-950 border border-gray-800 rounded-lg text-[9px] font-bold uppercase tracking-widest text-cyan-500/70">
                         {resource.category}
                       </span>
+                      {resource.isFree && (
+                        <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[9px] font-bold uppercase tracking-widest text-emerald-300">
+                          Free
+                        </span>
+                      )}
                       {resource.tags?.slice(0, 2).map(tag => (
                         <span key={tag} className="text-[8px] font-bold uppercase tracking-widest text-gray-600">
                           {tag}
@@ -187,7 +267,12 @@ const ResourcesPage = () => {
                 </div>
               )) : (
                 <div className="col-span-full text-center py-24 bg-slate-900/10 rounded-3xl border border-dashed border-gray-800">
-                  <p className="text-gray-500 text-sm italic">No resources found in this category.</p>
+                  <p className="text-gray-300 text-sm font-semibold">
+                    No blogs matched your search.
+                  </p>
+                  <p className="text-gray-500 text-sm italic mt-2">
+                    Try a different keyword, tag, or category.
+                  </p>
                 </div>
               )}
             </div>

@@ -98,8 +98,15 @@ export const updateUserProfile = async (profileData) => {
 };
 
 // Resource Services
-export const getResources = async (category = 'All', page = 1, limit = 9) => {
-  const response = await api.get('/resources', { params: { category, page, limit } });
+export const getResources = async (category = 'All', page = 1, limit = 9, search = '') => {
+  const response = await api.get('/resources', {
+    params: {
+      category,
+      page,
+      limit,
+      q: search || undefined,
+    },
+  });
   return response.data;
 };
 
