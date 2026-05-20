@@ -222,6 +222,27 @@ const Navbar = () => {
         )}
 
         <div className="flex items-center gap-6">
+          {/* RESOURCES HOVER DROPDOWN */}
+          <div className="relative group">
+            <button className="text-sm font-semibold text-gray-300 hover:text-cyan-400 transition-colors flex items-center gap-1.5 py-2 cursor-pointer bg-transparent border-none focus:outline-none">
+              📚 Resources <span className="text-[10px] opacity-60 group-hover:rotate-180 transition-transform duration-300">▼</span>
+            </button>
+            {/* Hover floating glass dropdown */}
+            <div className="absolute left-1/2 -translate-x-1/2 mt-0 pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+              <div className="bg-slate-950/95 backdrop-blur-3xl border border-slate-800 rounded-3xl p-3 shadow-2xl flex flex-col gap-0.5">
+                {['All', 'DSA', 'System Design', 'Backend', 'Frontend', 'Full stack', 'Cloud', 'Ci/cd', 'Misc'].map(cat => (
+                  <Link
+                    key={cat}
+                    to={`/resources?category=${encodeURIComponent(cat)}`}
+                    className="px-4 py-2.5 rounded-xl hover:bg-slate-900/60 text-xs font-black uppercase tracking-wider text-gray-400 hover:text-cyan-400 transition-colors text-left"
+                  >
+                    {cat}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {token ? (
             <div className="relative" ref={dropdownRef}>
               {/* INTERACTIVE PROFILE AVATAR ICON */}

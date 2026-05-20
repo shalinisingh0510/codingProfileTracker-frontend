@@ -13,7 +13,6 @@ import {
   analyzeAIProfile
 } from '../services/api';
 import AdBanner from '../components/AdBanner';
-import ResourceHub from '../components/ResourceHub';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -815,8 +814,6 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
-        <ResourceHub />
 
         {/* AI Report Modal */}
         {showAIModal && (
