@@ -83,19 +83,23 @@ const Navbar = () => {
 
   const handleFetchLastReport = async () => {
     setShowDropdown(false);
-    setReportLoading(true);
-    setShowReportModal(true);
     try {
       const data = await getLastAiReport();
-      if (data && data.report) {
-        setAiReport(data.report);
+      if (data && data.id) {
+        navigate(`/ai-report/${data.id}`);
       } else {
-        setAiReport("### No Analysis Found\n\nYou haven't analyzed your profile yet. Go to your Dashboard and click **Analyze Profile** to generate your first report.");
+        setReportLoading(true);
+        setShowReportModal(true);
+        if (data && data.report) {
+          setAiReport(data.report);
+        } else {
+          setAiReport("### No Analysis Found\n\nYou haven't analyzed your profile yet. Go to your Dashboard and click **Analyze Profile** to generate your first report.");
+        }
+        setReportLoading(false);
       }
     } catch (error) {
+      setShowReportModal(true);
       setAiReport("### Error\n\nFailed to load report. Please try again.");
-    } finally {
-      setReportLoading(false);
     }
   };
 

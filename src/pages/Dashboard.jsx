@@ -451,9 +451,7 @@ const Dashboard = () => {
   const [totalSolved, setTotalSolved] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiReport, setAiReport] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showAIModal, setShowAIModal] = useState(false);
   const navigate = useNavigate();
 
   const fetchPlatformData = useCallback(async (platformName, handle, fetchFn) => {
@@ -482,14 +480,14 @@ const Dashboard = () => {
       return;
     }
     setIsAnalyzing(true);
-    setShowAIModal(true);
     try {
       const result = await analyzeAIProfile();
-      setAiReport(result.report);
+      if (result.id) {
+        navigate(`/ai-report/${result.id}`);
+      }
     } catch (err) {
       console.error(err);
-      const backendMessage = err.response?.data?.message || err.message;
-      setAiReport(`**Error Analysis Profile:** \n\n${backendMessage}\n\n*Please check your backend logs or Render dashboard for more details.*`);
+      alert("Failed to analyze profile. Please check server logs.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -814,34 +812,6 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
-        {/* AI Report Modal */}
-        {showAIModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-[#0f172a] border border-cyan-500/30 rounded-3xl p-8 max-w-3xl w-full max-h-[80vh] overflow-y-auto shadow-[0_0_50px_rgba(6,182,212,0.15)] relative">
-              <button 
-                onClick={() => setShowAIModal(false)}
-                className="absolute top-6 right-6 text-gray-500 hover:text-white"
-              >
-                ✕
-              </button>
-              <h2 className="text-2xl font-black text-cyan-400 mb-6 flex items-center gap-3">
-                <span>🤖</span> AI Profile Analysis
-              </h2>
-              
-              {isAnalyzing ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-4">
-                  <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-cyan-500 animate-pulse font-black uppercase tracking-widest text-xs">Analyzing Platforms...</p>
-                </div>
-              ) : (
-                <div className="prose-custom text-gray-300 text-sm leading-relaxed space-y-4 [&>h1]:text-2xl [&>h1]:font-black [&>h1]:text-white [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-cyan-400 [&>h3]:text-lg [&>h3]:font-bold [&>h3]:text-indigo-400 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>li]:mb-1 [&>p]:mb-4 [&>strong]:text-white">
-                  <Markdown>{aiReport}</Markdown>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Upgrade Prompt Modal */}
         {showUpgradeModal && (

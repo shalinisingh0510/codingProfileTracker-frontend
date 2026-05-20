@@ -9,6 +9,7 @@ import Pricing from './pages/Pricing';
 import AdminDashboard from './pages/AdminDashboard';
 import ResourcesPage from './pages/ResourcesPage';
 import ResourceDetailPage from './pages/ResourceDetailPage';
+import AiReportPage from './pages/AiReportPage';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import {
@@ -31,6 +32,14 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/resources/:slug" element={<ResourceDetailPage />} />
+        <Route 
+          path="/ai-report/:id" 
+          element={
+            <ProtectedRoute>
+              <AiReportPage />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="/dashboard" element={<LegacyDashboardRedirect />} />
         <Route path="/profile" element={<LegacyProfileRedirect />} />
         <Route 

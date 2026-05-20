@@ -173,4 +173,14 @@ export const analyzeAIProfile = async () => {
   return response.data;
 };
 
+export const getAiReportById = async (id) => {
+  const response = await api.get(`/ai/report/${id}`);
+  return response.data;
+};
+
+export const getAiRecommendations = async (id) => {
+  const response = await api.get(`/ai/recommendations/${id}`);
+  return response.data;
+};
+
 export default api;
