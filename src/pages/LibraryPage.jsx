@@ -156,9 +156,17 @@ const LibraryPage = () => {
         ) : activeResources.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {activeResources.map((resource) => (
-              <button
+              <article
                 key={resource._id}
                 onClick={() => handleResourceClick(resource)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleResourceClick(resource);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
                 className={`group relative text-left bg-slate-900/20 border rounded-3xl p-7 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between min-h-[280px] cursor-pointer ${
                   resource.isLocked
                     ? 'border-amber-500/10 hover:border-amber-500/25'
@@ -224,7 +232,7 @@ const LibraryPage = () => {
                     </span>
                   )}
                 </div>
-              </button>
+              </article>
             ))}
           </div>
         ) : (

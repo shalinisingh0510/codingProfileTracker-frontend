@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Markdown from 'react-markdown';
 import { getLastAiReport } from '../services/api';
 import { getDashboardPath, getStoredUsername } from '../utils/routes';
 
@@ -10,6 +11,7 @@ const LatestAiReportPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [emptyState, setEmptyState] = useState(false);
+  const [legacyReport, setLegacyReport] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -20,6 +22,11 @@ const LatestAiReportPage = () => {
 
         if (data?.id) {
           navigate(`/ai-report/${data.id}`, { replace: true });
+          return;
+        }
+
+        if (data?.report) {
+          setLegacyReport(data.report);
           return;
         }
 
@@ -62,6 +69,16 @@ const LatestAiReportPage = () => {
               <h1 className="text-3xl font-black tracking-tight text-white mb-4">We could not open the report.</h1>
               <p className="text-gray-400 text-sm leading-relaxed">{error}</p>
             </>
+          ) : legacyReport ? (
+            <div className="text-left">
+              <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-cyan-500/20 mb-5 inline-block">
+                Legacy Report
+              </span>
+              <h1 className="text-3xl font-black tracking-tight text-white mb-8 text-center">Your latest AI report.</h1>
+              <div className="prose prose-invert prose-cyan max-w-none text-gray-300 leading-relaxed text-base">
+                <Markdown>{legacyReport}</Markdown>
+              </div>
+            </div>
           ) : emptyState ? (
             <>
               <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-cyan-500/20 mb-5 inline-block">

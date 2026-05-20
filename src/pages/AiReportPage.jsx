@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { getAiReportById, getAiRecommendations, toggleBookmark } from '../services/api';
+import { getDashboardPath, getStoredUsername } from '../utils/routes';
 
 const AiReportPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const username = getStoredUsername();
 
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
   const [recommendations, setRecommendations] = useState([]);
+  const [focusAreas, setFocusAreas] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(false);
 
@@ -32,12 +35,13 @@ const AiReportPage = () => {
   }, [id]);
 
   const handleImprove = async () => {
-    if (showRecommendations) return;
+    if (loadingRecommendations) return;
     setLoadingRecommendations(true);
     setShowRecommendations(true);
     try {
       const data = await getAiRecommendations(id);
       setRecommendations(data.resources || []);
+      setFocusAreas(Array.isArray(data.focusAreas) ? data.focusAreas : []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -87,7 +91,7 @@ const AiReportPage = () => {
         <div className="text-center">
           <p className="text-red-400 text-xl font-bold mb-4">{error}</p>
           <button 
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate(getDashboardPath(username))}
             className="px-6 py-2 bg-slate-900 border border-slate-800 rounded-xl text-gray-400 hover:text-white"
           >
             Return to Dashboard
@@ -104,7 +108,7 @@ const AiReportPage = () => {
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="mb-10 border-b border-slate-800/60 pb-5">
           <button 
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate(getDashboardPath(username))}
             className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-wider mb-6 inline-block"
           >
             ← Back to Dashboard
@@ -136,7 +140,19 @@ const AiReportPage = () => {
           <div className="mt-16 animate-in fade-in slide-in-from-bottom-10 duration-700">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-black text-white mb-3">Recommended Learning Path</h2>
-              <p className="text-gray-500 text-sm">Curated resources based on your identified weaknesses.</p>
+              <p className="text-gray-500 text-sm">Curated resources matched to the actual weak spots from your report.</p>
+              {focusAreas.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-2 mt-5">
+                  {focusAreas.map((area) => (
+                    <span
+                      key={area}
+                      className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-black uppercase tracking-widest text-cyan-400"
+                    >
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {loadingRecommendations ? (
@@ -163,21 +179,50 @@ const AiReportPage = () => {
                     </button>
 
                     <div className="mt-2">
-                      <span className="px-3 py-1 bg-slate-950 border border-gray-800 rounded-lg text-[9px] font-bold uppercase tracking-widest text-cyan-500/70 mb-4 inline-block">
-                        {resource.category}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2 mb-4">
+                        <span className="px-3 py-1 bg-slate-950 border border-gray-800 rounded-lg text-[9px] font-bold uppercase tracking-widest text-cyan-500/70">
+                          {resource.category}
+                        </span>
+                        {resource.recommendedFor && (
+                          <span className="px-3 py-1 bg-white/5 border border-white/5 rounded-lg text-[9px] font-bold uppercase tracking-widest text-gray-300">
+                            Improve: {resource.recommendedFor}
+                          </span>
+                        )}
+                      </div>
                       <h3 className="text-lg font-black text-white group-hover:text-cyan-400 mb-2 tracking-tight leading-snug transition-colors">
                         {resource.title}
                       </h3>
                       <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">
                         {resource.description}
                       </p>
+                      {resource.recommendationReason && (
+                        <p className="text-cyan-100/80 text-xs leading-relaxed mt-4 border-l border-cyan-500/20 pl-3">
+                          {resource.recommendationReason}
+                        </p>
+                      )}
+                      {resource.matchedTags?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {resource.matchedTags.slice(0, 4).map((tag) => (
+                            <span
+                              key={`${resource._id}-${tag}`}
+                              className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] font-bold uppercase tracking-widest text-gray-400"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-6 flex items-center justify-between">
                       <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-cyan-400/80">
                         Read article →
                       </span>
+                      {resource.resourceKey && (
+                        <span className="text-[9px] text-gray-600 uppercase tracking-widest">
+                          Ref {resource.resourceKey}
+                        </span>
+                      )}
                     </div>
                   </div>
                 )) : (
