@@ -137,3 +137,12 @@ export const TCS_NQT_GUIDE = {
     },
   ],
 };
+
+export const EXAM_GUIDES = [
+  {
+    label: 'TCS NQT',
+    path: '/exam-guide/tcs-nqt',
+    description: 'Aptitude, reasoning, verbal ability, and coding prep map.',
+  },
+];
+
