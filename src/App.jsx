@@ -15,6 +15,7 @@ import LibraryPage from './pages/LibraryPage';
 import TcsNqtGuidePage from './pages/TcsNqtGuidePage';
 import TcsNqtTopicPage from './pages/TcsNqtTopicPage';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import {
   HomeRedirect,
@@ -27,7 +28,8 @@ import {
 function App() {
   return (
     <Router>
-      <Navbar />
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
       <Routes>
         <Route path="/" element={<HomeRedirect />} />
         <Route path="/login" element={<Login />} />
@@ -83,6 +85,8 @@ function App() {
         />
         <Route path="*" element={<HomeRedirect />} />
       </Routes>
+      <Footer />
+      </div>
     </Router>
   );
 }
