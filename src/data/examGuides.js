@@ -56,7 +56,257 @@ export const TCS_NQT_GUIDE = {
         { topicSlug: 'paper-07', title: 'Previous Paper 07', summary: 'Full length memory based paper 7.' },
         { topicSlug: 'paper-08', title: 'Previous Paper 08', summary: 'Full length memory based paper 8.' },
         { topicSlug: 'paper-09', title: 'Previous Paper 09', summary: 'Full length memory based paper 9.' },
-        { topicSlug: 'paper-10', title: 'Previous Paper 10', summary: 'Full length memory based paper 10.' },
+        { topicSlug: 'paper-10', title: 'Previous Paper 10', summary: 'Full length memory based paper 10.' },,
+        {
+                "topicSlug": "check-even-or-odd",
+                "title": "Check Even or Odd",
+                "summary": "Coding question: Check Even or Odd"
+        },
+        {
+                "topicSlug": "check-prime-number",
+                "title": "Check Prime Number",
+                "summary": "Coding question: Check Prime Number"
+        },
+        {
+                "topicSlug": "factorial-of-a-number",
+                "title": "Factorial of a Number",
+                "summary": "Coding question: Factorial of a Number"
+        },
+        {
+                "topicSlug": "fibonacci-series-first-n-terms",
+                "title": "Fibonacci Series (First N Terms)",
+                "summary": "Coding question: Fibonacci Series (First N Terms)"
+        },
+        {
+                "topicSlug": "reverse-a-number",
+                "title": "Reverse a Number",
+                "summary": "Coding question: Reverse a Number"
+        },
+        {
+                "topicSlug": "check-palindrome-number",
+                "title": "Check Palindrome Number",
+                "summary": "Coding question: Check Palindrome Number"
+        },
+        {
+                "topicSlug": "armstrong-number",
+                "title": "Armstrong Number",
+                "summary": "Coding question: Armstrong Number"
+        },
+        {
+                "topicSlug": "sum-of-digits",
+                "title": "Sum of Digits",
+                "summary": "Coding question: Sum of Digits"
+        },
+        {
+                "topicSlug": "largest-of-three-numbers",
+                "title": "Largest of Three Numbers",
+                "summary": "Coding question: Largest of Three Numbers"
+        },
+        {
+                "topicSlug": "gcd-of-two-numbers",
+                "title": "GCD of Two Numbers",
+                "summary": "Coding question: GCD of Two Numbers"
+        },
+        {
+                "topicSlug": "lcm-of-two-numbers",
+                "title": "LCM of Two Numbers",
+                "summary": "Coding question: LCM of Two Numbers"
+        },
+        {
+                "topicSlug": "check-leap-year",
+                "title": "Check Leap Year",
+                "summary": "Coding question: Check Leap Year"
+        },
+        {
+                "topicSlug": "count-vowels-and-consonants",
+                "title": "Count Vowels and Consonants",
+                "summary": "Coding question: Count Vowels and Consonants"
+        },
+        {
+                "topicSlug": "reverse-a-string",
+                "title": "Reverse a String",
+                "summary": "Coding question: Reverse a String"
+        },
+        {
+                "topicSlug": "check-anagram",
+                "title": "Check Anagram",
+                "summary": "Coding question: Check Anagram"
+        },
+        {
+                "topicSlug": "remove-duplicates-from-string",
+                "title": "Remove Duplicates from String",
+                "summary": "Coding question: Remove Duplicates from String"
+        },
+        {
+                "topicSlug": "find-second-largest-in-array",
+                "title": "Find Second Largest in Array",
+                "summary": "Coding question: Find Second Largest in Array"
+        },
+        {
+                "topicSlug": "linear-search",
+                "title": "Linear Search",
+                "summary": "Coding question: Linear Search"
+        },
+        {
+                "topicSlug": "binary-search-sorted-array",
+                "title": "Binary Search (Sorted Array)",
+                "summary": "Coding question: Binary Search (Sorted Array)"
+        },
+        {
+                "topicSlug": "bubble-sort",
+                "title": "Bubble Sort",
+                "summary": "Coding question: Bubble Sort"
+        },
+        {
+                "topicSlug": "selection-sort",
+                "title": "Selection Sort",
+                "summary": "Coding question: Selection Sort"
+        },
+        {
+                "topicSlug": "insertion-sort",
+                "title": "Insertion Sort",
+                "summary": "Coding question: Insertion Sort"
+        },
+        {
+                "topicSlug": "matrix-addition",
+                "title": "Matrix Addition",
+                "summary": "Coding question: Matrix Addition"
+        },
+        {
+                "topicSlug": "transpose-of-matrix",
+                "title": "Transpose of Matrix",
+                "summary": "Coding question: Transpose of Matrix"
+        },
+        {
+                "topicSlug": "count-frequency-of-element-in-array",
+                "title": "Count Frequency of Element in Array",
+                "summary": "Coding question: Count Frequency of Element in Array"
+        },
+        {
+                "topicSlug": "check-if-array-is-sorted",
+                "title": "Check if Array is Sorted",
+                "summary": "Coding question: Check if Array is Sorted"
+        },
+        {
+                "topicSlug": "merge-two-arrays",
+                "title": "Merge Two Arrays",
+                "summary": "Coding question: Merge Two Arrays"
+        },
+        {
+                "topicSlug": "find-missing-number-1-to-n",
+                "title": "Find Missing Number (1 to N)",
+                "summary": "Coding question: Find Missing Number (1 to N)"
+        },
+        {
+                "topicSlug": "count-words-in-a-string",
+                "title": "Count Words in a String",
+                "summary": "Coding question: Count Words in a String"
+        },
+        {
+                "topicSlug": "remove-all-spaces-from-string",
+                "title": "Remove All Spaces from String",
+                "summary": "Coding question: Remove All Spaces from String"
+        },
+        {
+                "topicSlug": "find-duplicate-elements-in-array",
+                "title": "Find Duplicate Elements in Array",
+                "summary": "Coding question: Find Duplicate Elements in Array"
+        },
+        {
+                "topicSlug": "move-all-zeros-to-end",
+                "title": "Move All Zeros to End",
+                "summary": "Coding question: Move All Zeros to End"
+        },
+        {
+                "topicSlug": "rotate-array-right-by-1-position",
+                "title": "Rotate Array Right by 1 Position",
+                "summary": "Coding question: Rotate Array Right by 1 Position"
+        },
+        {
+                "topicSlug": "check-palindrome-string",
+                "title": "Check Palindrome String",
+                "summary": "Coding question: Check Palindrome String"
+        },
+        {
+                "topicSlug": "count-number-of-digits",
+                "title": "Count Number of Digits",
+                "summary": "Coding question: Count Number of Digits"
+        },
+        {
+                "topicSlug": "sum-of-elements-in-array",
+                "title": "Sum of Elements in Array",
+                "summary": "Coding question: Sum of Elements in Array"
+        },
+        {
+                "topicSlug": "find-minimum-element-in-array",
+                "title": "Find Minimum Element in Array",
+                "summary": "Coding question: Find Minimum Element in Array"
+        },
+        {
+                "topicSlug": "pattern-printing-right-triangle",
+                "title": "Pattern Printing (Right Triangle)",
+                "summary": "Coding question: Pattern Printing (Right Triangle)"
+        },
+        {
+                "topicSlug": "power-of-a-number",
+                "title": "Power of a Number",
+                "summary": "Coding question: Power of a Number"
+        },
+        {
+                "topicSlug": "decimal-to-binary",
+                "title": "Decimal to Binary",
+                "summary": "Coding question: Decimal to Binary"
+        },
+        {
+                "topicSlug": "binary-to-decimal",
+                "title": "Binary to Decimal",
+                "summary": "Coding question: Binary to Decimal"
+        },
+        {
+                "topicSlug": "check-perfect-number",
+                "title": "Check Perfect Number",
+                "summary": "Coding question: Check Perfect Number"
+        },
+        {
+                "topicSlug": "strong-number",
+                "title": "Strong Number",
+                "summary": "Coding question: Strong Number"
+        },
+        {
+                "topicSlug": "count-even-and-odd-numbers-in-array",
+                "title": "Count Even and Odd Numbers in Array",
+                "summary": "Coding question: Count Even and Odd Numbers in Array"
+        },
+        {
+                "topicSlug": "find-intersection-of-two-arrays",
+                "title": "Find Intersection of Two Arrays",
+                "summary": "Coding question: Find Intersection of Two Arrays"
+        },
+        {
+                "topicSlug": "check-substring",
+                "title": "Check Substring",
+                "summary": "Coding question: Check Substring"
+        },
+        {
+                "topicSlug": "remove-specific-character-from-string",
+                "title": "Remove Specific Character from String",
+                "summary": "Coding question: Remove Specific Character from String"
+        },
+        {
+                "topicSlug": "sum-of-prime-numbers-up-to-n",
+                "title": "Sum of Prime Numbers up to N",
+                "summary": "Coding question: Sum of Prime Numbers up to N"
+        },
+        {
+                "topicSlug": "reverse-words-in-a-sentence",
+                "title": "Reverse Words in a Sentence",
+                "summary": "Coding question: Reverse Words in a Sentence"
+        },
+        {
+                "topicSlug": "two-sum-problem",
+                "title": "Two Sum Problem",
+                "summary": "Coding question: Two Sum Problem"
+        },
       ]
     },
     {
