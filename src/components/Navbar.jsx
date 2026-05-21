@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { searchUsers } from '../services/api';
+import { EXAM_GUIDES } from '../data/examGuides';
 
 const RESOURCE_CATEGORIES = ['All', 'DSA', 'System Design', 'Backend', 'Frontend', 'Full stack', 'Cloud', 'Ci/cd', 'Misc'];
 
@@ -148,6 +149,32 @@ const Navbar = () => {
 
         {/* Right: Nav items */}
         <div className="flex items-center gap-1 md:gap-2">
+          <div className="relative group hidden md:block">
+            <Link
+              to={EXAM_GUIDES[0]?.path || '/exam-guide/tcs-nqt'}
+              className="px-3 py-2 text-sm font-semibold text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-white/5 flex items-center gap-1.5"
+            >
+              Exam Guide
+              <svg className="w-3 h-3 opacity-40 group-hover:opacity-70 group-hover:rotate-180 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </Link>
+            <div className="absolute left-0 mt-0 pt-1 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="bg-slate-950/98 backdrop-blur-xl border border-slate-800 rounded-2xl p-2 shadow-2xl shadow-black/60">
+                {EXAM_GUIDES.map((guide) => (
+                  <Link
+                    key={guide.path}
+                    to={guide.path}
+                    className="block px-4 py-3 rounded-xl hover:bg-white/5 transition-colors"
+                  >
+                    <p className="text-[11px] font-bold text-white">{guide.label}</p>
+                    <p className="text-[10px] text-gray-500 mt-1 leading-relaxed">{guide.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Resources Dropdown */}
           <div className="relative group hidden md:block">
             <Link
