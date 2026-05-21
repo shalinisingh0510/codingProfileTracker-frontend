@@ -56,7 +56,21 @@ export const TCS_NQT_GUIDE = {
         { topicSlug: 'paper-07', title: 'Previous Paper 07', summary: 'Full length memory based paper 7.' },
         { topicSlug: 'paper-08', title: 'Previous Paper 08', summary: 'Full length memory based paper 8.' },
         { topicSlug: 'paper-09', title: 'Previous Paper 09', summary: 'Full length memory based paper 9.' },
-        { topicSlug: 'paper-10', title: 'Previous Paper 10', summary: 'Full length memory based paper 10.' },,
+        { topicSlug: 'paper-10', title: 'Previous Paper 10', summary: 'Full length memory based paper 10.' },
+      ]
+    },
+    {
+      id: 'coding-questions',
+      title: 'Coding Questions',
+      eyebrow: 'Programming',
+      description: 'Practice the most frequently asked coding questions in TCS NQT with multi-language solutions.',
+      accent: 'indigo',
+      topics: [
+        { topicSlug: 'odd-occurring-element', title: 'Odd Occurring Element', summary: 'Find the element that appears an odd number of times in O(log N).' },
+        { topicSlug: 'count-subsets-sum', title: 'Count Subsets with Sum', summary: 'Count subsets summing to a target using DP.' },
+        { topicSlug: 'chocolate-packets', title: 'Chocolate Packets', summary: 'Move all defective packets (0s) to the end.' },
+        { topicSlug: 'covid-handshake', title: 'COVID Handshake', summary: 'Calculate total handshakes in a room of N people.' },
+        { topicSlug: 'book-exchange', title: 'Book Exchange', summary: 'Calculate valid derangement exchanges of N books.' },
         {
                 "topicSlug": "check-even-or-odd",
                 "title": "Check Even or Odd",
@@ -306,21 +320,7 @@ export const TCS_NQT_GUIDE = {
                 "topicSlug": "two-sum-problem",
                 "title": "Two Sum Problem",
                 "summary": "Coding question: Two Sum Problem"
-        },
-      ]
-    },
-    {
-      id: 'coding-questions',
-      title: 'Coding Questions',
-      eyebrow: 'Programming',
-      description: 'Practice the most frequently asked coding questions in TCS NQT with multi-language solutions.',
-      accent: 'indigo',
-      topics: [
-        { topicSlug: 'odd-occurring-element', title: 'Odd Occurring Element', summary: 'Find the element that appears an odd number of times in O(log N).' },
-        { topicSlug: 'count-subsets-sum', title: 'Count Subsets with Sum', summary: 'Count subsets summing to a target using DP.' },
-        { topicSlug: 'chocolate-packets', title: 'Chocolate Packets', summary: 'Move all defective packets (0s) to the end.' },
-        { topicSlug: 'covid-handshake', title: 'COVID Handshake', summary: 'Calculate total handshakes in a room of N people.' },
-        { topicSlug: 'book-exchange', title: 'Book Exchange', summary: 'Calculate valid derangement exchanges of N books.' },
+        }
       ]
     },
     {
