@@ -307,42 +307,52 @@ export const TCS_NQT_GUIDE = {
       accent: 'amber',
       topics: [
         {
+          topicSlug: 'number-and-letter-series',
           title: 'Number and Letter Series',
           summary: 'Missing terms, alternating sequences, alphabet jumps, and mixed patterns.',
         },
         {
+          topicSlug: 'coding-and-decoding',
           title: 'Coding and Decoding',
           summary: 'Word coding, symbol replacement, letter shifting, and rule-based decoding.',
         },
         {
+          topicSlug: 'blood-relations',
           title: 'Blood Relations',
           summary: 'Family-tree interpretation, coded relations, and quick relation mapping.',
         },
         {
+          topicSlug: 'seating-arrangement',
           title: 'Seating Arrangement',
           summary: 'Linear and circular arrangements, adjacency constraints, and ordering logic.',
         },
         {
+          topicSlug: 'direction-sense',
           title: 'Direction Sense',
           summary: 'Movement tracking, orientation changes, and shortest-path reasoning.',
         },
         {
+          topicSlug: 'data-sufficiency',
           title: 'Data Sufficiency',
           summary: 'Check whether the provided statements are enough without solving fully.',
         },
         {
+          topicSlug: 'statement-and-conclusion',
           title: 'Statement and Conclusion',
           summary: 'Inference quality, logical consistency, and conclusion validity checks.',
         },
         {
+          topicSlug: 'analogy-and-odd-one-out',
           title: 'Analogy and Odd One Out',
           summary: 'Relation mapping between terms and pattern-break identification.',
         },
         {
+          topicSlug: 'symbols-and-notations',
           title: 'Symbols and Notations',
           summary: 'Operator substitution, custom notation interpretation, and quick rule application.',
         },
         {
+          topicSlug: 'data-arrangement-and-puzzles',
           title: 'Data Arrangement and Puzzles',
           summary: 'Grid filling, constraint mapping, and multi-variable deduction.',
         },

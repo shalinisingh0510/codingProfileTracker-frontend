@@ -405,10 +405,10 @@ const TcsNqtGuidePage = () => {
                   >
                     <div className={`absolute inset-x-0 top-0 h-20 bg-gradient-to-b ${style.glow} pointer-events-none`} />
                     <div className="relative z-10">
-                      {section.id === 'aptitude-section' ? (
+                      {topic.topicSlug ? (
                         <Link
-                          to={`/exam-guide/tcs-nqt/aptitude/${topic.topicSlug}`}
-                          className="text-lg font-black tracking-tight text-white text-left w-full hover:text-emerald-300 cursor-pointer block"
+                          to={`/exam-guide/tcs-nqt/${section.id.split('-')[0]}/${topic.topicSlug}`}
+                          className={`text-lg font-black tracking-tight text-white text-left w-full cursor-pointer block ${section.id === 'aptitude-section' ? 'hover:text-emerald-300' : section.id === 'reasoning-section' ? 'hover:text-amber-300' : 'hover:text-cyan-300'}`}
                         >
                           {topic.title}
                         </Link>
@@ -420,10 +420,10 @@ const TcsNqtGuidePage = () => {
                       <p className="text-gray-400 text-sm leading-relaxed mt-3">
                         {topic.summary}
                       </p>
-                      {section.id === 'aptitude-section' && (
+                      {topic.topicSlug && (
                         <Link
-                          to={`/exam-guide/tcs-nqt/aptitude/${topic.topicSlug}`}
-                          className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-600 hover:text-emerald-400 transition-colors mt-5 inline-block"
+                          to={`/exam-guide/tcs-nqt/${section.id.split('-')[0]}/${topic.topicSlug}`}
+                          className={`text-[10px] font-black uppercase tracking-[0.25em] text-gray-600 transition-colors mt-5 inline-block ${section.id === 'aptitude-section' ? 'hover:text-emerald-400' : section.id === 'reasoning-section' ? 'hover:text-amber-400' : 'hover:text-cyan-400'}`}
                         >
                           Open full notes
                         </Link>
