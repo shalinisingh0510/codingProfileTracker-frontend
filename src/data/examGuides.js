@@ -44,38 +44,33 @@ export const TCS_NQT_GUIDE = {
       id: 'previous-year-papers',
       title: 'Previous Year Papers',
       eyebrow: 'Mock Tests',
-      description: 'Solve memory-based previous year papers in a quiz format.',
+      description: 'Solve memory-based previous year papers from the Arjunpolen repo.',
       accent: 'cyan',
       topics: [
-        {
-          topicSlug: 'tcs-nqt-2024-morning-slot',
-          title: '2024 Morning Slot Paper',
-          summary: 'Full mock paper from the morning slot of 2024 with solutions.',
-        },
-        {
-          topicSlug: 'tcs-nqt-2023-afternoon-slot',
-          title: '2023 Afternoon Slot Paper',
-          summary: 'Full mock paper from the afternoon slot of 2023 with solutions.',
-        },
+        { topicSlug: 'paper-01', title: 'Previous Paper 01', summary: 'Full length memory based paper 1.' },
+        { topicSlug: 'paper-02', title: 'Previous Paper 02', summary: 'Full length memory based paper 2.' },
+        { topicSlug: 'paper-03', title: 'Previous Paper 03', summary: 'Full length memory based paper 3.' },
+        { topicSlug: 'paper-04', title: 'Previous Paper 04', summary: 'Full length memory based paper 4.' },
+        { topicSlug: 'paper-05', title: 'Previous Paper 05', summary: 'Full length memory based paper 5.' },
+        { topicSlug: 'paper-06', title: 'Previous Paper 06', summary: 'Full length memory based paper 6.' },
+        { topicSlug: 'paper-07', title: 'Previous Paper 07', summary: 'Full length memory based paper 7.' },
+        { topicSlug: 'paper-08', title: 'Previous Paper 08', summary: 'Full length memory based paper 8.' },
+        { topicSlug: 'paper-09', title: 'Previous Paper 09', summary: 'Full length memory based paper 9.' },
+        { topicSlug: 'paper-10', title: 'Previous Paper 10', summary: 'Full length memory based paper 10.' },
       ]
     },
     {
       id: 'coding-questions',
       title: 'Coding Questions',
       eyebrow: 'Programming',
-      description: 'Practice the most frequently asked coding questions in TCS NQT.',
+      description: 'Practice the most frequently asked coding questions in TCS NQT with multi-language solutions.',
       accent: 'indigo',
       topics: [
-        {
-          topicSlug: 'arrays-and-strings',
-          title: 'Arrays and Strings',
-          summary: 'Most frequently asked coding questions on Arrays and Strings.',
-        },
-        {
-          topicSlug: 'numbers-and-maths',
-          title: 'Numbers and Maths',
-          summary: 'Most frequently asked coding questions on Numbers and Mathematics.',
-        },
+        { topicSlug: 'odd-occurring-element', title: 'Odd Occurring Element', summary: 'Find the element that appears an odd number of times in O(log N).' },
+        { topicSlug: 'count-subsets-sum', title: 'Count Subsets with Sum', summary: 'Count subsets summing to a target using DP.' },
+        { topicSlug: 'chocolate-packets', title: 'Chocolate Packets', summary: 'Move all defective packets (0s) to the end.' },
+        { topicSlug: 'covid-handshake', title: 'COVID Handshake', summary: 'Calculate total handshakes in a room of N people.' },
+        { topicSlug: 'book-exchange', title: 'Book Exchange', summary: 'Calculate valid derangement exchanges of N books.' },
       ]
     },
     {
@@ -145,4 +140,3 @@ export const EXAM_GUIDES = [
     description: 'Aptitude, reasoning, verbal ability, and coding prep map.',
   },
 ];
-
