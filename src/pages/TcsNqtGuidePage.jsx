@@ -150,7 +150,42 @@ const TcsNqtGuidePage = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-                    {activeSection.topics.map((topic) => (
+                    {activeSection.topics.map((topic, index) => {
+                      const isLocked = index >= 2;
+                      
+                      if (isLocked) {
+                        return (
+                          <article
+                            key={`${activeSection.id}-locked-${index}`}
+                            className="relative bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 overflow-hidden transition-all duration-300 hover:border-emerald-500/30 group"
+                          >
+                            <div className="absolute inset-0 bg-[#020617]/40 backdrop-blur-[1px] z-20 flex flex-col items-center justify-center pointer-events-none transition-all group-hover:bg-[#020617]/60">
+                              <span className="text-3xl mb-3 opacity-80 group-hover:scale-110 transition-transform">🔒</span>
+                              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                                Premium
+                              </span>
+                            </div>
+                            <div className="relative z-10 opacity-30 filter blur-[2px] pointer-events-none">
+                              <span className="text-lg font-black tracking-tight text-white text-left w-full block">
+                                {topic.title}
+                              </span>
+                              <p className="text-gray-400 text-sm leading-relaxed mt-3">
+                                {topic.summary}
+                              </p>
+                            </div>
+                            <Link
+                              to="/pricing"
+                              className="absolute inset-0 z-30 flex items-end justify-center pb-6"
+                            >
+                              <span className="text-xs font-bold text-white hover:text-emerald-400 transition-colors uppercase tracking-wider underline underline-offset-4 decoration-emerald-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                Unlock Now →
+                              </span>
+                            </Link>
+                          </article>
+                        );
+                      }
+
+                      return (
                       <article
                         key={`${activeSection.id}-${topic.title}`}
                         className={`relative bg-slate-900/20 border border-slate-800 rounded-3xl p-6 overflow-hidden transition-all duration-300 hover:-translate-y-1 ${style.border}`}
@@ -182,7 +217,8 @@ const TcsNqtGuidePage = () => {
                           )}
                         </div>
                       </article>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               );
