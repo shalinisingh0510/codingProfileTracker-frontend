@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { TCS_NQT_GUIDE } from '../data/examGuides';
 import { getDashboardPath, getStoredUsername } from '../utils/routes';
 
@@ -221,7 +222,7 @@ const TcsNqtGuidePage = () => {
             <div className="text-red-300 text-sm">{textError}</div>
           ) : selectedResource.kind === 'markdown' ? (
             <div className="prose prose-invert prose-cyan max-w-none text-gray-300">
-              <Markdown>{resourceText}</Markdown>
+              <Markdown remarkPlugins={[remarkGfm]}>{resourceText}</Markdown>
             </div>
           ) : (
             <pre className="whitespace-pre-wrap break-words text-sm text-gray-300 font-mono leading-relaxed">
@@ -503,7 +504,7 @@ const TcsNqtGuidePage = () => {
                   <div className="text-red-300 text-sm">{topicError}</div>
                 ) : (
                   <div className="prose prose-invert prose-cyan max-w-none text-gray-300">
-                    <Markdown>{topicDetail?.contentMarkdown || ''}</Markdown>
+                    <Markdown remarkPlugins={[remarkGfm]}>{topicDetail?.contentMarkdown || ''}</Markdown>
                   </div>
                 )}
               </div>
