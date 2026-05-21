@@ -367,42 +367,52 @@ export const TCS_NQT_GUIDE = {
       accent: 'rose',
       topics: [
         {
+          topicSlug: 'reading-comprehension',
           title: 'Reading Comprehension',
           summary: 'Main idea, tone, detail retrieval, and inference from short passages.',
         },
         {
+          topicSlug: 'fill-in-the-blanks',
           title: 'Fill in the Blanks',
           summary: 'Grammar-based blanks, contextual vocabulary, and article/preposition usage.',
         },
         {
+          topicSlug: 'spotting-errors',
           title: 'Spotting Errors',
           summary: 'Agreement, tense, modifiers, prepositions, and common sentence-level grammar errors.',
         },
         {
+          topicSlug: 'sentence-completion',
           title: 'Sentence Completion',
           summary: 'Context fit, tone consistency, and grammar correctness.',
         },
         {
+          topicSlug: 'sentence-improvement',
           title: 'Sentence Improvement',
           summary: 'Find the best rewritten segment while preserving meaning and grammar.',
         },
         {
+          topicSlug: 'sentence-arrangement-and-para-jumbles',
           title: 'Sentence Arrangement and Para Jumbles',
           summary: 'Order jumbled statements through pronoun flow, connectors, and chronology.',
         },
         {
+          topicSlug: 'synonyms-and-antonyms',
           title: 'Synonyms and Antonyms',
           summary: 'Frequent vocabulary testing through meaning and opposite meaning pairs.',
         },
         {
+          topicSlug: 'idioms-and-phrases',
           title: 'Idioms and Phrases',
           summary: 'Contextual meaning of commonly used idiomatic expressions.',
         },
         {
+          topicSlug: 'active-and-passive-voice',
           title: 'Active and Passive Voice',
           summary: 'Voice transformation with tense consistency and subject-object awareness.',
         },
         {
+          topicSlug: 'joining-sentences-and-substitution',
           title: 'Joining Sentences and Substitution',
           summary: 'Combine ideas cleanly and replace phrases with concise alternatives.',
         },
