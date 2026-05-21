@@ -6,6 +6,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { getStoredUsername } from '../utils/routes';
+import MultiLangTabs from '../components/MultiLangTabs';
 
 /* ──────────────────────────────────────────────
    Custom Markdown Components – Premium Styling
@@ -122,6 +123,22 @@ const markdownComponents = {
         </code>
       );
     }
+    
+    // Handle Custom Multi-Language Tabs
+    if (className === 'language-multilang') {
+      const text = String(children);
+      const blocks = [];
+      // Support matching syntax: :::lang ... :::
+      const regex = /:::(\w+)\n([\s\S]*?)\n:::/g;
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        blocks.push({ lang: match[1].toLowerCase(), code: match[2].trim() });
+      }
+      if (blocks.length > 0) {
+        return <MultiLangTabs blocks={blocks} />;
+      }
+    }
+
     return (
       <div className="relative group my-8">
         <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -133,7 +150,7 @@ const markdownComponents = {
           </button>
         </div>
         <pre className="p-6 bg-[#070b15] rounded-2xl border border-slate-800 text-emerald-300 font-mono text-xs md:text-sm overflow-x-auto leading-relaxed shadow-inner">
-          <code {...props}>{children}</code>
+          <code className={className} {...props}>{children}</code>
         </pre>
       </div>
     );
