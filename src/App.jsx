@@ -13,6 +13,7 @@ import AiReportPage from './pages/AiReportPage';
 import LatestAiReportPage from './pages/LatestAiReportPage';
 import LibraryPage from './pages/LibraryPage';
 import TcsNqtGuidePage from './pages/TcsNqtGuidePage';
+import TcsNqtTopicPage from './pages/TcsNqtTopicPage';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import {
@@ -36,6 +37,7 @@ function App() {
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/resources/:slug" element={<ResourceDetailPage />} />
         <Route path="/exam-guide/tcs-nqt" element={<TcsNqtGuidePage />} />
+        <Route path="/exam-guide/tcs-nqt/:sectionSlug/:topicSlug" element={<TcsNqtTopicPage />} />
         <Route
           path="/library"
           element={

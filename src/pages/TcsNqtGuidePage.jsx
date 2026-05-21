@@ -84,10 +84,6 @@ const TcsNqtGuidePage = () => {
   const [resourceText, setResourceText] = useState('');
   const [loadingText, setLoadingText] = useState(false);
   const [textError, setTextError] = useState('');
-  const [showTopicModal, setShowTopicModal] = useState(false);
-  const [topicLoading, setTopicLoading] = useState(false);
-  const [topicError, setTopicError] = useState('');
-  const [topicDetail, setTopicDetail] = useState(null);
 
   const currentTab = useMemo(
     () => TCS_NQT_GUIDE.resourceTabs.find((tab) => tab.id === activeResourceTab) || TCS_NQT_GUIDE.resourceTabs[0],
@@ -232,44 +228,6 @@ const TcsNqtGuidePage = () => {
         </div>
       </div>
     );
-  };
-
-  const openAptitudeTopic = async (topic) => {
-    const topicSlug = topic?.topicSlug;
-    if (!topicSlug) return;
-
-    setShowTopicModal(true);
-    setTopicLoading(true);
-    setTopicError('');
-    setTopicDetail(null);
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || 'https://codingprofiletracker-backend.onrender.com/api'}/exam-guides/tcs-nqt/sections/aptitude/topics/${topicSlug}`
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch topic');
-      }
-
-      const data = await response.json();
-      if (!data?.topic?.contentMarkdown) {
-        throw new Error('Missing topic content');
-      }
-
-      setTopicDetail(data.topic);
-    } catch {
-      setTopicError('This topic content is not available yet. Please try again later.');
-    } finally {
-      setTopicLoading(false);
-    }
-  };
-
-  const closeTopicModal = () => {
-    setShowTopicModal(false);
-    setTopicDetail(null);
-    setTopicError('');
-    setTopicLoading(false);
   };
 
   return (
@@ -442,30 +400,33 @@ const TcsNqtGuidePage = () => {
                 {section.topics.map((topic) => (
                   <article
                     key={`${section.id}-${topic.title}`}
+                    id={topic.topicSlug || topic.title.toLowerCase().replace(/\\s+/g, '-')}
                     className={`relative bg-slate-900/20 border border-slate-800 rounded-3xl p-6 overflow-hidden transition-all duration-300 hover:-translate-y-1 ${style.border}`}
                   >
                     <div className={`absolute inset-x-0 top-0 h-20 bg-gradient-to-b ${style.glow} pointer-events-none`} />
                     <div className="relative z-10">
-                      <button
-                        onClick={() => {
-                          if (section.id === 'aptitude-section') {
-                            openAptitudeTopic(topic);
-                          }
-                        }}
-                        disabled={section.id !== 'aptitude-section'}
-                        className={`text-lg font-black tracking-tight text-white text-left w-full ${
-                          section.id === 'aptitude-section' ? 'hover:text-emerald-300 cursor-pointer' : 'cursor-default'
-                        }`}
-                      >
-                        {topic.title}
-                      </button>
+                      {section.id === 'aptitude-section' ? (
+                        <Link
+                          to={`/exam-guide/tcs-nqt/aptitude/${topic.topicSlug}`}
+                          className="text-lg font-black tracking-tight text-white text-left w-full hover:text-emerald-300 cursor-pointer block"
+                        >
+                          {topic.title}
+                        </Link>
+                      ) : (
+                        <span className="text-lg font-black tracking-tight text-white text-left w-full cursor-default block">
+                          {topic.title}
+                        </span>
+                      )}
                       <p className="text-gray-400 text-sm leading-relaxed mt-3">
                         {topic.summary}
                       </p>
                       {section.id === 'aptitude-section' && (
-                        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-600 mt-5">
+                        <Link
+                          to={`/exam-guide/tcs-nqt/aptitude/${topic.topicSlug}`}
+                          className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-600 hover:text-emerald-400 transition-colors mt-5 inline-block"
+                        >
                           Open full notes
-                        </p>
+                        </Link>
                       )}
                     </div>
                   </article>
@@ -475,42 +436,7 @@ const TcsNqtGuidePage = () => {
           );
         })}
 
-        {showTopicModal && (
-          <div className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-md flex items-center justify-center p-5">
-            <div className="w-full max-w-5xl max-h-[90vh] overflow-hidden bg-[#0b1121] border border-slate-800 rounded-3xl shadow-2xl flex flex-col">
-              <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-300">
-                    Aptitude Topic
-                  </p>
-                  <h3 className="text-xl md:text-2xl font-black tracking-tight text-white truncate">
-                    {topicDetail?.title || 'Loading...'}
-                  </h3>
-                </div>
-                <button
-                  onClick={closeTopicModal}
-                  className="w-10 h-10 rounded-2xl border border-slate-800 bg-slate-950/60 text-gray-400 hover:text-white hover:border-slate-700 transition-colors cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
 
-              <div className="p-6 overflow-auto">
-                {topicLoading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin"></div>
-                  </div>
-                ) : topicError ? (
-                  <div className="text-red-300 text-sm">{topicError}</div>
-                ) : (
-                  <div className="prose prose-invert prose-cyan max-w-none text-gray-300">
-                    <Markdown remarkPlugins={[remarkGfm]}>{topicDetail?.contentMarkdown || ''}</Markdown>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
         <section className="bg-[#0b1121] border border-slate-800 rounded-3xl p-7 md:p-9">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
