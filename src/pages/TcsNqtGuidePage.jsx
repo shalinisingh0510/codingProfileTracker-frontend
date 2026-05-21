@@ -1,7 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { TCS_NQT_GUIDE } from '../data/examGuides';
 import { getDashboardPath, getStoredUsername } from '../utils/routes';
 
@@ -38,10 +36,10 @@ const accentStyles = {
   },
 };
 
-const GuideCardLink = ({ card }) => {
+const GuideCardLink = ({ card, onClick }) => {
   const style = accentStyles[card.accent] || accentStyles.cyan;
 
-  const sharedClassName = `group relative bg-slate-900/25 border border-slate-800 rounded-3xl p-7 text-left transition-all duration-300 hover:-translate-y-1 ${style.border} overflow-hidden min-h-[240px] flex flex-col justify-between`;
+  const sharedClassName = `group relative bg-slate-900/25 border border-slate-800 rounded-3xl p-7 text-left transition-all duration-300 hover:-translate-y-1 ${style.border} overflow-hidden min-h-[240px] flex flex-col justify-between w-full cursor-pointer`;
 
   const content = (
     <>
@@ -61,174 +59,19 @@ const GuideCardLink = ({ card }) => {
     </>
   );
 
-  if (card.type === 'external') {
-    return (
-      <a href={card.href} target="_blank" rel="noreferrer" className={sharedClassName}>
-        {content}
-      </a>
-    );
-  }
-
   return (
-    <a href={card.href} className={sharedClassName}>
+    <button onClick={onClick} className={sharedClassName}>
       {content}
-    </a>
+    </button>
   );
 };
 
 const TcsNqtGuidePage = () => {
   const navigate = useNavigate();
   const username = getStoredUsername();
-  const [activeResourceTab, setActiveResourceTab] = useState(TCS_NQT_GUIDE.resourceTabs[0]?.id || '');
-  const [selectedResourceId, setSelectedResourceId] = useState(TCS_NQT_GUIDE.resourceTabs[0]?.resources?.[0]?.id || '');
-  const [resourceText, setResourceText] = useState('');
-  const [loadingText, setLoadingText] = useState(false);
-  const [textError, setTextError] = useState('');
+  const [activeSectionId, setActiveSectionId] = useState(null);
 
-  const currentTab = useMemo(
-    () => TCS_NQT_GUIDE.resourceTabs.find((tab) => tab.id === activeResourceTab) || TCS_NQT_GUIDE.resourceTabs[0],
-    [activeResourceTab],
-  );
-
-  const selectedResource = useMemo(
-    () => currentTab?.resources.find((resource) => resource.id === selectedResourceId) || currentTab?.resources?.[0] || null,
-    [currentTab, selectedResourceId],
-  );
-
-  useEffect(() => {
-    if (!currentTab) return;
-
-    const resourceExists = currentTab.resources.some((resource) => resource.id === selectedResourceId);
-    if (!resourceExists) {
-      setSelectedResourceId(currentTab.resources[0]?.id || '');
-    }
-  }, [currentTab, selectedResourceId]);
-
-  useEffect(() => {
-    const shouldFetchText = selectedResource && ['markdown', 'text', 'csv', 'ipynb'].includes(selectedResource.kind);
-
-    if (!shouldFetchText) {
-      setResourceText('');
-      setTextError('');
-      setLoadingText(false);
-      return;
-    }
-
-    let isMounted = true;
-
-    const fetchText = async () => {
-      setLoadingText(true);
-      setTextError('');
-
-      try {
-        const response = await fetch(selectedResource.downloadUrl);
-        if (!response.ok) {
-          throw new Error('Failed to fetch resource');
-        }
-
-        const text = await response.text();
-        if (isMounted) {
-          setResourceText(text);
-        }
-      } catch {
-        if (isMounted) {
-          setTextError('Unable to load this text resource right now.');
-          setResourceText('');
-        }
-      } finally {
-        if (isMounted) {
-          setLoadingText(false);
-        }
-      }
-    };
-
-    fetchText();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedResource]);
-
-  const renderResourcePreview = () => {
-    if (!selectedResource) {
-      return (
-        <div className="rounded-3xl border border-dashed border-slate-800 bg-slate-900/20 px-6 py-16 text-center text-gray-500">
-          Select a resource to preview it here.
-        </div>
-      );
-    }
-
-    if (selectedResource.kind === 'pdf') {
-      return (
-        <div className="rounded-3xl overflow-hidden border border-slate-800 bg-slate-950/80">
-          <iframe
-            title={selectedResource.title}
-            src={selectedResource.downloadUrl}
-            className="w-full h-[720px] bg-white"
-          />
-        </div>
-      );
-    }
-
-    if (selectedResource.kind === 'external') {
-      return (
-        <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-8">
-          <span className="inline-flex px-3 py-1 rounded-full border bg-indigo-500/10 border-indigo-500/20 text-[10px] font-black uppercase tracking-[0.25em] text-indigo-300">
-            Coding Link
-          </span>
-          <h3 className="text-2xl font-black tracking-tight text-white mt-5">
-            {selectedResource.title}
-          </h3>
-          <p className="text-gray-400 text-sm leading-relaxed mt-3 max-w-2xl">
-            {selectedResource.description}
-          </p>
-          <a
-            href={selectedResource.viewUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center px-5 py-3 rounded-2xl bg-cyan-500 text-black text-[11px] font-black uppercase tracking-widest hover:bg-cyan-400 transition-colors mt-6"
-          >
-            Open coding sheet
-          </a>
-        </div>
-      );
-    }
-
-    return (
-      <div className="rounded-3xl border border-slate-800 bg-slate-950/80 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between gap-4">
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-300">
-            Text Preview
-          </span>
-          <a
-            href={selectedResource.viewUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 hover:text-white transition-colors"
-          >
-            Open source
-          </a>
-        </div>
-        <div className="p-6 max-h-[720px] overflow-auto">
-          {loadingText ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="w-10 h-10 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
-            </div>
-          ) : textError ? (
-            <div className="text-red-300 text-sm">{textError}</div>
-          ) : selectedResource.kind === 'markdown' ? (
-            <div className="prose prose-invert prose-cyan max-w-none text-gray-300">
-              <Markdown remarkPlugins={[remarkGfm]}>{resourceText}</Markdown>
-            </div>
-          ) : (
-            <pre className="whitespace-pre-wrap break-words text-sm text-gray-300 font-mono leading-relaxed">
-              {resourceText}
-            </pre>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const activeSection = TCS_NQT_GUIDE.sections.find(s => s.id === activeSectionId);
 
   return (
     <div className="min-h-screen bg-[#020617] text-white pt-28 pb-24 px-6 md:px-12 relative overflow-hidden">
@@ -237,12 +80,21 @@ const TcsNqtGuidePage = () => {
 
       <div className="max-w-7xl mx-auto relative z-10 space-y-12">
         <div className="flex flex-col gap-6">
-          <button
-            onClick={() => navigate(getDashboardPath(username))}
-            className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-wider inline-flex w-fit cursor-pointer"
-          >
-            ← Back to Dashboard
-          </button>
+          {!activeSectionId ? (
+            <button
+              onClick={() => navigate(getDashboardPath(username))}
+              className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-wider inline-flex w-fit cursor-pointer transition-colors"
+            >
+              ← Back to Dashboard
+            </button>
+          ) : (
+            <button
+              onClick={() => setActiveSectionId(null)}
+              className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-wider inline-flex w-fit cursor-pointer transition-colors"
+            >
+              ← Back to Overview
+            </button>
+          )}
 
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
             <div className="max-w-3xl">
@@ -267,216 +119,76 @@ const TcsNqtGuidePage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
-          {TCS_NQT_GUIDE.overviewCards.map((card) => (
-            <GuideCardLink key={card.id} card={card} />
-          ))}
-        </div>
-
-        <section id="resource-library-section" className="scroll-mt-28 space-y-6">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
-            <div className="max-w-3xl">
-              <span className="inline-flex px-3 py-1 rounded-full border bg-cyan-500/10 border-cyan-500/20 text-[10px] font-black uppercase tracking-[0.25em] text-cyan-300">
-                Resource Library
-              </span>
-              <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mt-4">
-                TCS NQT repo resources inside the guide.
-              </h2>
-              <p className="text-gray-400 text-sm mt-3 leading-relaxed">
-                These tabs are built from the shared GitHub repo so users can browse memory-based papers, prep PDFs, and notes from one place before opening the original source.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 p-2 rounded-3xl bg-slate-900/35 border border-slate-800">
-            {TCS_NQT_GUIDE.resourceTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveResourceTab(tab.id)}
-                className={`px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-colors cursor-pointer ${
-                  activeResourceTab === tab.id
-                    ? 'bg-cyan-500 text-black'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {tab.label}
-              </button>
+        {!activeSectionId ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
+            {TCS_NQT_GUIDE.overviewCards.map((card) => (
+              <GuideCardLink 
+                key={card.id} 
+                card={card} 
+                onClick={() => setActiveSectionId(card.id)} 
+              />
             ))}
           </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-6">
-            <div className="space-y-4">
-              <div className="bg-slate-900/20 border border-slate-800 rounded-3xl p-5">
-                <p className="text-white font-black tracking-tight text-lg">{currentTab?.label}</p>
-                <p className="text-gray-400 text-sm leading-relaxed mt-2">
-                  {currentTab?.description}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {currentTab?.resources.map((resource) => {
-                  const isSelected = resource.id === selectedResource?.id;
-                  return (
-                    <button
-                      key={resource.id}
-                      onClick={() => setSelectedResourceId(resource.id)}
-                      className={`w-full text-left rounded-3xl border p-5 transition-all duration-200 cursor-pointer ${
-                        isSelected
-                          ? 'bg-cyan-500/10 border-cyan-500/30'
-                          : 'bg-slate-900/20 border-slate-800 hover:border-slate-700 hover:bg-slate-900/35'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-white font-black tracking-tight text-base">
-                          {resource.title}
-                        </span>
-                        <span className={`px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-[0.2em] ${
-                          isSelected
-                            ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-300'
-                            : 'bg-white/5 border-white/5 text-gray-400'
-                        }`}>
-                          {resource.format}
-                        </span>
-                      </div>
-                      <p className="text-gray-400 text-sm leading-relaxed mt-3">
-                        {resource.description}
+        ) : (
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+            {activeSection && (() => {
+              const style = accentStyles[activeSection.accent] || accentStyles.cyan;
+              return (
+                <>
+                  <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-7">
+                    <div className="max-w-2xl">
+                      <span className={`inline-flex px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.25em] ${style.badge}`}>
+                        {activeSection.eyebrow}
+                      </span>
+                      <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mt-4">
+                        {activeSection.title}
+                      </h2>
+                      <p className="text-gray-400 text-sm mt-3 leading-relaxed">
+                        {activeSection.description}
                       </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-slate-900/20 border border-slate-800 rounded-3xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400">
-                    Selected Resource
-                  </p>
-                  <h3 className="text-2xl font-black tracking-tight text-white mt-2">
-                    {selectedResource?.title}
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed mt-2 max-w-2xl">
-                    {selectedResource?.description}
-                  </p>
-                </div>
-                {selectedResource?.viewUrl && (
-                  <a
-                    href={selectedResource.viewUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-[11px] font-black uppercase tracking-widest hover:bg-white/10 transition-colors shrink-0"
-                  >
-                    Open source
-                  </a>
-                )}
-              </div>
-
-              {renderResourcePreview()}
-            </div>
-          </div>
-        </section>
-
-        {TCS_NQT_GUIDE.sections.map((section) => {
-          const style = accentStyles[section.accent] || accentStyles.cyan;
-
-          return (
-            <section key={section.id} id={section.id} className="scroll-mt-28">
-              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-7">
-                <div className="max-w-2xl">
-                  <span className={`inline-flex px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.25em] ${style.badge}`}>
-                    {section.eyebrow}
-                  </span>
-                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mt-4">
-                    {section.title}
-                  </h2>
-                  <p className="text-gray-400 text-sm mt-3 leading-relaxed">
-                    {section.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-                {section.topics.map((topic) => (
-                  <article
-                    key={`${section.id}-${topic.title}`}
-                    id={topic.topicSlug || topic.title.toLowerCase().replace(/\\s+/g, '-')}
-                    className={`relative bg-slate-900/20 border border-slate-800 rounded-3xl p-6 overflow-hidden transition-all duration-300 hover:-translate-y-1 ${style.border}`}
-                  >
-                    <div className={`absolute inset-x-0 top-0 h-20 bg-gradient-to-b ${style.glow} pointer-events-none`} />
-                    <div className="relative z-10">
-                      {topic.topicSlug ? (
-                        <Link
-                          to={`/exam-guide/tcs-nqt/${section.id.split('-')[0]}/${topic.topicSlug}`}
-                          className={`text-lg font-black tracking-tight text-white text-left w-full cursor-pointer block ${section.id === 'aptitude-section' ? 'hover:text-emerald-300' : section.id === 'reasoning-section' ? 'hover:text-amber-300' : 'hover:text-cyan-300'}`}
-                        >
-                          {topic.title}
-                        </Link>
-                      ) : (
-                        <span className="text-lg font-black tracking-tight text-white text-left w-full cursor-default block">
-                          {topic.title}
-                        </span>
-                      )}
-                      <p className="text-gray-400 text-sm leading-relaxed mt-3">
-                        {topic.summary}
-                      </p>
-                      {topic.topicSlug && (
-                        <Link
-                          to={`/exam-guide/tcs-nqt/${section.id.split('-')[0]}/${topic.topicSlug}`}
-                          className={`text-[10px] font-black uppercase tracking-[0.25em] text-gray-600 transition-colors mt-5 inline-block ${section.id === 'aptitude-section' ? 'hover:text-emerald-400' : section.id === 'reasoning-section' ? 'hover:text-amber-400' : 'hover:text-cyan-400'}`}
-                        >
-                          Open full notes
-                        </Link>
-                      )}
                     </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+                  </div>
 
-
-
-        <section className="bg-[#0b1121] border border-slate-800 rounded-3xl p-7 md:p-9">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-            <div className="max-w-3xl">
-              <span className="inline-flex px-3 py-1 rounded-full border bg-white/5 border-white/10 text-[10px] font-black uppercase tracking-[0.25em] text-gray-300">
-                Source Notes
-              </span>
-              <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white mt-4">
-                Built from current TCS NQT topic coverage.
-              </h2>
-              <p className="text-gray-400 text-sm leading-relaxed mt-3">
-                This first version is focused on TCS NQT and uses current syllabus and practice-guide references to shape the section and topic cards.
-              </p>
-            </div>
-
-            <Link
-              to="/resources?category=DSA"
-              className="inline-flex items-center justify-center px-5 py-3 rounded-2xl bg-cyan-500 text-black text-[11px] font-black uppercase tracking-widest hover:bg-cyan-400 transition-colors"
-            >
-              Explore Resource Hub
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8">
-            {TCS_NQT_GUIDE.sources.map((source) => (
-              <a
-                key={source.href}
-                href={source.href}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between gap-4 px-4 py-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/25 transition-colors"
-              >
-                <span className="text-sm text-gray-300">{source.label}</span>
-                <span className="text-cyan-300 text-xs font-black uppercase tracking-widest shrink-0">
-                  Open
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+                    {activeSection.topics.map((topic) => (
+                      <article
+                        key={`${activeSection.id}-${topic.title}`}
+                        className={`relative bg-slate-900/20 border border-slate-800 rounded-3xl p-6 overflow-hidden transition-all duration-300 hover:-translate-y-1 ${style.border}`}
+                      >
+                        <div className={`absolute inset-x-0 top-0 h-20 bg-gradient-to-b ${style.glow} pointer-events-none`} />
+                        <div className="relative z-10">
+                          {topic.topicSlug ? (
+                            <Link
+                              to={`/exam-guide/tcs-nqt/${activeSection.id}/${topic.topicSlug}`}
+                              className={`text-lg font-black tracking-tight text-white text-left w-full cursor-pointer block ${style.text.replace('text-', 'hover:text-')}`}
+                            >
+                              {topic.title}
+                            </Link>
+                          ) : (
+                            <span className="text-lg font-black tracking-tight text-white text-left w-full cursor-default block">
+                              {topic.title}
+                            </span>
+                          )}
+                          <p className="text-gray-400 text-sm leading-relaxed mt-3">
+                            {topic.summary}
+                          </p>
+                          {topic.topicSlug && (
+                            <Link
+                              to={`/exam-guide/tcs-nqt/${activeSection.id}/${topic.topicSlug}`}
+                              className={`text-[10px] font-black uppercase tracking-[0.25em] text-gray-600 transition-colors mt-5 inline-block ${style.text.replace('text-', 'hover:text-')}`}
+                            >
+                              Open {activeSection.id === 'previous-year-papers' || activeSection.id === 'coding-questions' ? 'paper/quiz' : 'full notes'}
+                            </Link>
+                          )}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+          </section>
+        )}
       </div>
     </div>
   );
