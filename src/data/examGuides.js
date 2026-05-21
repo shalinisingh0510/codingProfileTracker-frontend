@@ -237,50 +237,62 @@ export const TCS_NQT_GUIDE = {
       accent: 'emerald',
       topics: [
         {
+          topicSlug: 'percentages',
           title: 'Percentages',
           summary: 'Conversions, percentage change, successive percentages, and option elimination with fraction shortcuts.',
         },
         {
+          topicSlug: 'ratio-and-proportion',
           title: 'Ratio and Proportion',
           summary: 'Ratios, proportions, partnership style comparisons, and fast relation setup between quantities.',
         },
         {
+          topicSlug: 'allegations-and-mixtures',
           title: 'Allegations and Mixtures',
           summary: 'Mixture concentration and weighted value questions solved quickly with allegation logic.',
         },
         {
+          topicSlug: 'averages',
           title: 'Averages',
           summary: 'Direct average, weighted average, replacement logic, and average shift patterns.',
         },
         {
+          topicSlug: 'profit-and-loss',
           title: 'Profit and Loss',
           summary: 'Marked price, discount, profit percentage, and chained gain-loss calculations.',
         },
         {
+          topicSlug: 'work-and-time',
           title: 'Work and Time',
           summary: 'Individual efficiency, combined work, LCM method, and pipes/cistern-style variants.',
         },
         {
+          topicSlug: 'speed-time-distance',
           title: 'Speed, Time and Distance',
           summary: 'Relative speed, trains, average speed, and journey-split problems.',
         },
         {
+          topicSlug: 'number-system-lcm-hcf',
           title: 'Number System, LCM and HCF',
           summary: 'Divisibility, factors, remainders, cyclicity, and foundational number properties.',
         },
         {
+          topicSlug: 'probability',
           title: 'Probability',
           summary: 'Basic event probability, complementary cases, and selection-style outcomes.',
         },
         {
+          topicSlug: 'permutation-and-combination',
           title: 'Permutation and Combination',
           summary: 'Arrangements, selections, and counting patterns used in advanced aptitude variants.',
         },
         {
+          topicSlug: 'geometry-area-perimeter',
           title: 'Geometry, Area and Perimeter',
           summary: '2D shapes, area formulas, mensuration basics, and comparison-based geometry.',
         },
         {
+          topicSlug: 'clocks-calendar-ages',
           title: 'Clocks, Calendar and Ages',
           summary: 'Calendar offsets, clock angle logic, and age relation word problems.',
         },
