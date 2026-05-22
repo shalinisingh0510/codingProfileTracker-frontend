@@ -5,8 +5,9 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
-import { getStoredUsername } from '../utils/routes';
+import { getStoredUsername, getStoredUser } from '../utils/routes';
 import MultiLangTabs from '../components/MultiLangTabs';
+import { TCS_NQT_GUIDE } from '../data/examGuides';
 
 /* ──────────────────────────────────────────────
    Custom Markdown Components – Premium Styling
@@ -286,6 +287,18 @@ const parseTopicMarkdown = (markdown) => {
 const TcsNqtTopicPage = () => {
   const { sectionSlug, topicSlug } = useParams();
   const navigate = useNavigate();
+  const user = getStoredUser();
+  const isPremiumOrPlus = user?.subscriptionTier === 'plus' || user?.subscriptionTier === 'premium';
+
+  useEffect(() => {
+    const section = TCS_NQT_GUIDE.sections.find(s => s.id === sectionSlug);
+    if (section) {
+      const index = section.topics.findIndex(t => t.topicSlug === topicSlug);
+      if (index >= 2 && !isPremiumOrPlus) {
+        navigate('/pricing', { replace: true });
+      }
+    }
+  }, [sectionSlug, topicSlug, isPremiumOrPlus, navigate]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

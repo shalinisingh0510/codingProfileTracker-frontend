@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TCS_NQT_GUIDE } from '../data/examGuides';
-import { getDashboardPath, getStoredUsername } from '../utils/routes';
+import { getDashboardPath, getStoredUsername, getStoredUser } from '../utils/routes';
 
 const accentStyles = {
   cyan: {
@@ -69,9 +69,11 @@ const GuideCardLink = ({ card, onClick }) => {
 const TcsNqtGuidePage = () => {
   const navigate = useNavigate();
   const username = getStoredUsername();
+  const user = getStoredUser();
   const [activeSectionId, setActiveSectionId] = useState(null);
 
   const activeSection = TCS_NQT_GUIDE.sections.find(s => s.id === activeSectionId);
+  const isPremiumOrPlus = user?.subscriptionTier === 'plus' || user?.subscriptionTier === 'premium';
 
   return (
     <div className="min-h-screen bg-[#020617] text-white pt-28 pb-24 px-6 md:px-12 relative overflow-hidden">
@@ -151,7 +153,7 @@ const TcsNqtGuidePage = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
                     {activeSection.topics.map((topic, index) => {
-                      const isLocked = index >= 2;
+                      const isLocked = index >= 2 && !isPremiumOrPlus;
                       
                       if (isLocked) {
                         return (
