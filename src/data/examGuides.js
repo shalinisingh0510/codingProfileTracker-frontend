@@ -68,6 +68,7 @@ export const TCS_NQT_GUIDE = {
       topics: [
         { topicSlug: 'problems-on-strings', title: 'Problems on Strings', summary: 'A comprehensive collection of 28 important string manipulation problems.' },
         { topicSlug: 'problems-on-numbers', title: 'Problems on Numbers', summary: 'A comprehensive collection of 35 mathematical and number-theory problems.' },
+        { topicSlug: 'problems-on-arrays', title: 'Problems on Arrays', summary: 'A comprehensive collection of 25 important array manipulation problems.' },
         { topicSlug: 'odd-occurring-element', title: 'Odd Occurring Element', summary: 'Find the element that appears an odd number of times in O(log N).' },
         { topicSlug: 'count-subsets-sum', title: 'Count Subsets with Sum', summary: 'Count subsets summing to a target using DP.' },
         { topicSlug: 'chocolate-packets', title: 'Chocolate Packets', summary: 'Move all defective packets (0s) to the end.' },
