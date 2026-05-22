@@ -1,0 +1,132 @@
+
+# 1. Comprehensive Theory of Percentages
+## What is a Percentage?
+Percentage translates to "per hundred" (derived from Latin *per centum*). It is a dimensionless number used to express a fraction of 100. The core logic of percentage is standardizing any base to 100 to make comparisons easier.
+
+**Mathematical Definition:**  
+$x\% = \frac{x}{100}$
+
+**Base Value Concept (Crucial for TCS NQT):**
+In any percentage problem, identifying the **Base** (the 100% value) is the most critical step. 
+- "A is 20% more than B" ➔ B is the Base (100%).
+- "B is 20% less than A" ➔ A is the Base (100%).
+
+## Fraction ↔ Percentage Conversions (The Holy Grail)
+To solve TCS NQT questions in under 30 seconds, you **must** memorize these fractional equivalents. Never calculate $16.66\%$ of a number; calculate $\frac{1}{6}$ of it!
+
+| Fraction | Percentage | Fraction | Percentage |
+| :---: | :---: | :---: | :---: |
+| 1/2 | 50% | 1/9 | 11.11% |
+| 1/3 | 33.33% | 1/10 | 10% |
+| 1/4 | 25% | 1/11 | 9.09% |
+| 1/5 | 20% | 1/12 | 8.33% |
+| 1/6 | 16.66% | 1/15 | 6.66% |
+| 1/7 | 14.28% | 1/16 | 6.25% |
+| 1/8 | 12.5% | 1/20 | 5% |
+
+**Derived Fractions (Advanced):**
+- 3/8 = 37.5%
+- 5/8 = 62.5%
+- 7/8 = 87.5%
+- 2/3 = 66.66%
+- 5/6 = 83.33%
+
+---
+
+# 2. Advanced Tricks & Shortcuts
+## Trick 1: The Commutative Property (x% of y = y% of x)
+Whenever a calculation looks difficult, swap the percentage symbol!
+- **Hard:** Find 16% of 25.
+- **Easy:** Find 25% of 16 ➔ $\frac{1}{4} \times 16 = 4$.
+
+## Trick 2: Percentage Split Strategy
+Break down complex percentages into chunks of 10%, 5%, and 1%.
+- **Find 52% of 450:**
+  - 50% = 225
+  - 1% = 4.5 ➔ 2% = 9
+  - Total = 225 + 9 = 234.
+
+## Trick 3: Successive Percentage Change (The AB Rule)
+If a value undergoes two successive changes of $a\%$ and $b\%$, the net percentage change is:
+**Net Change = $a + b + \frac{a \times b}{100}$**
+*(Use '+' for increase and '-' for decrease)*
+
+- **Example:** Salary increases by 20%, then decreases by 10%.
+  Net Change = $20 - 10 + \frac{20 \times (-10)}{100} = 10 - 2 = 8\%$ (Increase).
+
+## Trick 4: The Constant Product Rule (Price × Consumption = Expenditure)
+If the price of an item increases by $x\%$, by how much should consumption decrease to keep expenditure constant?
+**Decrease % = $\left( \frac{x}{100 + x} \right) \times 100$**
+
+If price decreases by $x\%$, the required increase in consumption:
+**Increase % = $\left( \frac{x}{100 - x} \right) \times 100$**
+
+---
+\n\n
+# 12. Detailed Solutions
+**A1:** 
+- **Step 1:** Recognize the fraction equivalent of 25%, which is 1/4.
+- **Step 2:** Multiply the base by the fraction: (1/4) × 480 = **120**.
+
+**A2:** 
+- **Step 1:** Use the formula: Percentage = (Part / Whole) × 100.
+- **Step 2:** (40 / 160) × 100 = (1/4) × 100 = **25%**.
+
+**A3:** 
+- **Step 1:** Calculate the absolute increase: 24000 - 20000 = 4000.
+- **Step 2:** Use percentage increase formula: (Increase / Original) × 100.
+- **Step 3:** (4000 / 20000) × 100 = (1/5) × 100 = **20%**.
+
+**A4:** 
+- **Step 1:** Calculate the absolute decrease: 800 - 680 = 120.
+- **Step 2:** Use percentage decrease formula: (Decrease / Original) × 100.
+- **Step 3:** (120 / 800) × 100 = **15%**.
+
+**A5:** 
+- **Step 1:** Apply the Successive Change Formula: a + b + (ab / 100).
+- **Step 2:** 20 + 10 + (20 × 10 / 100) = 30 + 2 = **32%**.
+
+**A6:** 
+- **Step 1:** For equal increase and decrease (x%), use shortcut: Net Change = -(x² / 100)%.
+- **Step 2:** -(30² / 100) = -(900 / 100) = -9%. 
+- **Conclusion:** It is a **9% decrease**.
+
+**A7:** 
+- **Step 1:** A 25% increase means the new salary is 125% of the original.
+- **Step 2:** 125% of Original = 50000.
+- **Step 3:** Original = (50000 × 100) / 125 = **40000**.
+
+**A8:** 
+- **Step 1:** Apply the Successive Discount Formula: a + b - (ab / 100).
+- **Step 2:** 20 + 10 - (20 × 10 / 100) = 30 - 2 = **28%**.
+
+**A9:** 
+- **Step 1:** A 15% increase means current population is 115% of original.
+- **Step 2:** 115% of Original = 23000.
+- **Step 3:** Original = (23000 × 100) / 115 = **20000**.
+
+**A10:** 
+- **Step 1:** Recognize the fraction equivalent of 12.5%, which is 1/8.
+- **Step 2:** Multiply: (1/8) × 640 = **80**.
+
+**A11:** 
+- **Step 1:** Percentage = (Marks Obtained / Total Marks) × 100.
+- **Step 2:** (360 / 450) × 100 = (4/5) × 100 = **80%**.
+
+**A12:** 
+- **Step 1:** Calculate Profit: SP - CP = 1500 - 1200 = 300.
+- **Step 2:** Profit Percentage = (Profit / CP) × 100 = (300 / 1200) × 100 = (1/4) × 100 = **25%**.
+
+**A13:** 
+- **Step 1:** Loss is calculated on CP. Loss = 10% of 1800 = 180.
+- **Step 2:** SP = CP - Loss = 1800 - 180 = **1620**.
+
+**A14:** 
+- **Step 1:** Percentage = (Part / Whole) × 100.
+- **Step 2:** (75 / 250) × 100 = (3/10) × 100 = **30%**.
+
+**A15:** 
+- **Step 1:** A 10% decrease means final value is 90% of original.
+- **Step 2:** 90% of Original = 880.
+- **Step 3:** Original = (880 × 100) / 90 = **977.78**.
+

@@ -163,8 +163,21 @@ const markdownComponents = {
    ────────────────────────────────────────────── */
 const parseTopicMarkdown = (markdown) => {
   if (!markdown) {
-    return { theoryMarkdown: '', questions: [], revisionMarkdown: '' };
+    return { theoryMarkdown: '', questions: [], revisionMarkdown: '', isCollection: false, collectionCards: [] };
   }
+
+  const isCollection = markdown.includes('<!-- TYPE: COLLECTION -->');
+  if (isCollection) {
+    const sections = markdown.split(/^## /m).slice(1);
+    const collectionCards = sections.map((sec, idx) => {
+      const lines = sec.split('\n');
+      const title = lines[0].trim();
+      const content = '## ' + sec; // Preserve the original header if needed, or just let it render
+      return { id: idx, title, content };
+    });
+    return { isCollection: true, collectionCards, questions: [], theoryMarkdown: '' };
+  }
+
 
   const lines = markdown.split('\n');
   let currentSection = 'theory';
@@ -310,9 +323,12 @@ const TcsNqtTopicPage = () => {
     theoryMarkdown: '',
     questions: [],
     revisionMarkdown: '',
+    isCollection: false,
+    collectionCards: [],
   });
 
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const [activeCollectionCardIndex, setActiveCollectionCardIndex] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
   const [revealedSolutions, setRevealedSolutions] = useState({});
   const [scratchpads, setScratchpads] = useState({});
@@ -454,18 +470,59 @@ const TcsNqtTopicPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* ── Tab Bar ── */}
-            <div className="flex flex-wrap gap-2 p-1.5 rounded-2xl bg-[#0b1121] border border-slate-800 max-w-fit">
-              <button
-                onClick={() => setActiveTab('theory')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all cursor-pointer ${
-                  activeTab === 'theory'
-                    ? 'bg-emerald-500 text-black shadow-lg'
-                    : 'text-gray-400 hover:text-white hover:bg-slate-800/50'
-                }`}
-              >
-                📖 Theory Notes
-              </button>
+            {/* ── Collection Mode ── */}
+            {parsedData.isCollection ? (
+              <div className="space-y-6">
+                {activeCollectionCardIndex === null ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {parsedData.collectionCards.map((card, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveCollectionCardIndex(idx)}
+                        className="group relative bg-[#0b1121] border border-slate-800 rounded-3xl p-6 text-left transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 overflow-hidden"
+                      >
+                        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
+                        <div className="relative z-10 flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400 font-black group-hover:bg-emerald-500/10 group-hover:border-emerald-500/30 transition-colors">
+                            {idx + 1}
+                          </div>
+                          <span className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors leading-tight">
+                            {card.title}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-[#0b1121] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl relative">
+                    <button
+                      onClick={() => setActiveCollectionCardIndex(null)}
+                      className="mb-8 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-gray-400 hover:text-white hover:border-slate-700 text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer"
+                    >
+                      ← Back to Problems
+                    </button>
+                    <div className="prose prose-invert prose-emerald max-w-none leading-relaxed">
+                      <Markdown {...mdPlugins}>
+                        {parsedData.collectionCards[activeCollectionCardIndex].content}
+                      </Markdown>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* ── Tab Bar ── */}
+                <div className="flex flex-wrap gap-2 p-1.5 rounded-2xl bg-[#0b1121] border border-slate-800 max-w-fit">
+                  <button
+                    onClick={() => setActiveTab('theory')}
+                    className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all cursor-pointer ${
+                      activeTab === 'theory'
+                        ? 'bg-emerald-500 text-black shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-slate-800/50'
+                    }`}
+                  >
+                    📖 Theory Notes
+                  </button>
               {totalQuestions > 0 && (
                 <button
                   onClick={() => setActiveTab('practice')}
@@ -723,6 +780,8 @@ const TcsNqtTopicPage = () => {
                 </div>
               )}
             </div>
+            </>
+            )}
           </div>
         )}
       </div>
