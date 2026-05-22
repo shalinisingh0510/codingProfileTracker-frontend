@@ -177,17 +177,18 @@ const parseTopicMarkdown = (markdown) => {
     const line = lines[i];
     const trimmed = line.trim();
 
-    if (trimmed.startsWith('## ')) {
-      const heading = trimmed.toLowerCase();
-      if (heading.includes('practice questions')) {
+    if (trimmed.startsWith('#')) {
+      const heading = trimmed.replace(/^#+\s*/, '').toLowerCase();
+      if (heading.includes('practice questions') || heading.includes('practice question')) {
         currentSection = 'questions';
         continue;
-      } else if (heading.includes('answers') || heading.includes('solutions')) {
+      } else if (heading.includes('answers') || heading.includes('solutions') || heading.includes('detailed solutions')) {
         currentSection = 'answers';
         continue;
       } else if (
         heading.includes('revision') ||
         heading.includes('cheat sheet') ||
+        heading.includes('master cheat sheet') ||
         heading.includes('revision card') ||
         heading.includes('last-minute')
       ) {
@@ -210,7 +211,7 @@ const parseTopicMarkdown = (markdown) => {
   /* Parse individual questions */
   const questions = [];
   let currentQ = null;
-  const qRegex = /^\s*(?:\*\*)?Q(\d+)\.?(?:\*\*)?\s*(.*)$/i;
+  const qRegex = /^\s*(?:\*\*)?Q(\d+)\.?(?:\*\*)?:?\s*(.*)$/i;
 
   questionLines.forEach((line) => {
     const match = line.match(qRegex);
@@ -250,7 +251,7 @@ const parseTopicMarkdown = (markdown) => {
   /* Parse answers */
   const answers = {};
   let currentAId = null;
-  const aRegex = /^\s*(?:\*\*)?A(\d+)\.?(?:\*\*)?\s*(.*)$/i;
+  const aRegex = /^\s*(?:\*\*)?A(\d+)\.?(?:\*\*)?:?\s*(.*)$/i;
 
   answerLines.forEach((line) => {
     const match = line.match(aRegex);
