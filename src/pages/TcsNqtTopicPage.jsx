@@ -525,17 +525,29 @@ const TcsNqtTopicPage = () => {
                   </button>
               {totalQuestions > 0 && (
                 <button
-                  onClick={() => setActiveTab('practice')}
+                  onClick={() => setActiveTab('practice_questions')}
                   className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all cursor-pointer flex items-center gap-2 ${
-                    activeTab === 'practice'
+                    activeTab === 'practice_questions'
                       ? 'bg-emerald-500 text-black shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-slate-800/50'
                   }`}
                 >
-                  🧪 Practice Quiz
+                  📝 Practice Questions
+                </button>
+              )}
+              {totalQuestions > 0 && (
+                <button
+                  onClick={() => setActiveTab('quiz')}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all cursor-pointer flex items-center gap-2 ${
+                    activeTab === 'quiz'
+                      ? 'bg-emerald-500 text-black shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-slate-800/50'
+                  }`}
+                >
+                  🧪 Interactive Quiz
                   <span
                     className={`px-1.5 py-0.5 rounded text-[10px] font-black leading-none ${
-                      activeTab === 'practice'
+                      activeTab === 'quiz'
                         ? 'bg-black/10 text-black'
                         : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                     }`}
@@ -567,8 +579,36 @@ const TcsNqtTopicPage = () => {
                 </div>
               )}
 
-              {/* ═══ PRACTICE QUIZ TAB ═══ */}
-              {activeTab === 'practice' && activeQuestion && (
+              {/* ═══ PRACTICE QUESTIONS TAB ═══ */}
+              {activeTab === 'practice_questions' && (
+                <div className="space-y-8">
+                  <h2 className="text-2xl font-black text-white mb-6">Practice Questions & Solutions</h2>
+                  {parsedData.questions.map((q) => (
+                    <div key={q.id} className="bg-slate-900/30 border border-slate-800 p-6 rounded-2xl">
+                      <h3 className="text-lg font-bold text-white mb-4">Q{q.id}. {q.text}</h3>
+                      {q.options && q.options.length > 0 && (
+                        <ul className="space-y-2 mb-6">
+                          {q.options.map(opt => (
+                            <li key={opt.key} className="text-gray-300">
+                              <span className="font-bold text-emerald-400 mr-2">{opt.key}.</span>
+                              {opt.text}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                        <span className="text-xs font-black uppercase tracking-widest text-emerald-400 block mb-2">Solution</span>
+                        <div className="prose prose-invert prose-emerald max-w-none text-sm text-gray-300">
+                          <Markdown {...mdPlugins}>{q.answerMarkdown}</Markdown>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ═══ INTERACTIVE QUIZ TAB ═══ */}
+              {activeTab === 'quiz' && activeQuestion && (
                 <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-8">
                   {/* Question list sidebar */}
                   <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 border-b lg:border-b-0 lg:border-r border-slate-800 lg:pr-6">
