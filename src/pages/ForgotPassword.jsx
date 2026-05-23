@@ -21,7 +21,12 @@ const ForgotPassword = () => {
 
     try {
       const data = await forgotPassword(email);
-      setMessage(data.message);
+      if (data.isDemo) {
+        setMessage(`${data.message}`);
+        setCode(data.demoCode); // Auto-fill the code for demo purposes
+      } else {
+        setMessage(data.message);
+      }
       setStep(2);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to send reset code.');
