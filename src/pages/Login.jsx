@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../services/api';
+import { login, googleLogin } from '../services/api';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -93,6 +94,41 @@ const Login = () => {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="mt-6 flex items-center justify-center">
+          <div className="w-full border-t border-gray-600"></div>
+          <div className="px-4 text-gray-400 text-sm">or</div>
+          <div className="w-full border-t border-gray-600"></div>
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              setIsLoading(true);
+              setError('');
+              try {
+                const data = await googleLogin(credentialResponse.credential);
+                if (data.token) {
+                  localStorage.setItem('token', data.token);
+                  localStorage.setItem('user', JSON.stringify(data));
+                  const username = data.username || data.email.split('@')[0];
+                  navigate(`/${username}/dashboard`);
+                }
+              } catch (err) {
+                setError(err.response?.data?.message || 'Google login failed.');
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            onError={() => {
+              setError('Google login failed.');
+            }}
+            theme="filled_black"
+            shape="rectangular"
+            text="signin_with"
+            size="large"
+          />
+        </div>
 
         <p className="mt-6 text-center text-sm text-gray-400">
           Don't have an account?{' '}

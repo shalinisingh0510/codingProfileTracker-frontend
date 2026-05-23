@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { register, checkUsername } from '../services/api';
+import { register, checkUsername, googleLogin } from '../services/api';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -232,6 +233,41 @@ const Register = () => {
             {isLoading ? 'Creating Account...' : 'Register'}
           </button>
         </form>
+
+        <div className="mt-6 flex items-center justify-center">
+          <div className="w-full border-t border-gray-600"></div>
+          <div className="px-4 text-gray-400 text-sm">or</div>
+          <div className="w-full border-t border-gray-600"></div>
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              setIsLoading(true);
+              setError('');
+              try {
+                const data = await googleLogin(credentialResponse.credential);
+                if (data.token) {
+                  localStorage.setItem('token', data.token);
+                  localStorage.setItem('user', JSON.stringify(data));
+                  const username = data.username || data.email.split('@')[0];
+                  navigate(`/${username}/dashboard`);
+                }
+              } catch (err) {
+                setError(err.response?.data?.message || 'Google registration failed.');
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            onError={() => {
+              setError('Google registration failed.');
+            }}
+            theme="filled_black"
+            shape="rectangular"
+            text="signup_with"
+            size="large"
+          />
+        </div>
 
         <p className="mt-6 text-center text-sm text-gray-400">
           Already have an account?{' '}

@@ -39,6 +39,11 @@ export const resetPassword = async ({ email, code, newPassword }) => {
   return response.data;
 };
 
+export const googleLogin = async (credential) => {
+  const response = await api.post('/auth/google', { credential });
+  return response.data;
+};
+
 // Dashboard Services
 export const getDashboardData = async () => {
   const response = await api.get('/dashboard');
