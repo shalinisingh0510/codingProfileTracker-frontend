@@ -73,7 +73,7 @@ const TcsNqtGuidePage = () => {
   const [activeSectionId, setActiveSectionId] = useState(null);
 
   const activeSection = TCS_NQT_GUIDE.sections.find(s => s.id === activeSectionId);
-  const isPremiumOrPlus = user?.subscriptionTier === 'plus' || user?.subscriptionTier === 'premium';
+  const hasAccess = user?.subscriptionTier === 'premium' || user?.tcsNqtSubscriptionStatus === 'active';
 
   return (
     <div className="min-h-screen bg-[#020617] text-white pt-28 pb-24 px-6 md:px-12 relative overflow-hidden">
@@ -153,7 +153,7 @@ const TcsNqtGuidePage = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
                     {activeSection.topics.map((topic, index) => {
-                      const isLocked = index >= 2 && !isPremiumOrPlus;
+                      const isLocked = !hasAccess;
                       
                       if (isLocked) {
                         return (
@@ -164,7 +164,7 @@ const TcsNqtGuidePage = () => {
                             <div className="absolute inset-0 bg-[#020617]/40 backdrop-blur-[1px] z-20 flex flex-col items-center justify-center pointer-events-none transition-all group-hover:bg-[#020617]/60">
                               <span className="text-3xl mb-3 opacity-80 group-hover:scale-110 transition-transform">🔒</span>
                               <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                                Premium
+                                Premium / TCS NQT Pass
                               </span>
                             </div>
                             <div className="relative z-10 opacity-30 filter blur-[2px] pointer-events-none">

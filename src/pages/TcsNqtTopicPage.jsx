@@ -399,6 +399,35 @@ const TcsNqtTopicPage = () => {
     components: markdownComponents,
   };
 
+  const user = getStoredUser();
+  const hasAccess = user?.subscriptionTier === 'premium' || user?.tcsNqtSubscriptionStatus === 'active';
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-[#020617] text-white pt-28 pb-24 px-4 flex items-center justify-center">
+        <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-10 max-w-md text-center flex flex-col items-center">
+          <span className="text-6xl mb-6">🔒</span>
+          <h2 className="text-2xl font-black mb-3">Premium Content</h2>
+          <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+            This study guide is restricted to Premium users and TCS NQT Pass holders. Unlock now to get full access to theory, practice questions, and mock tests.
+          </p>
+          <Link
+            to="/pricing"
+            className="bg-purple-500 hover:bg-purple-400 text-[#020617] font-bold py-3 px-8 rounded-xl transition-colors uppercase tracking-wider text-sm w-full"
+          >
+            Get TCS NQT Pass
+          </Link>
+          <Link
+            to="/exam-guide/tcs-nqt"
+            className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-wider mt-6 transition-colors"
+          >
+            ← Back to Guide
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#020617] text-white pt-28 pb-24 px-4 md:px-12 relative overflow-hidden">
       {/* Ambient glow */}

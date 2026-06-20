@@ -67,6 +67,25 @@ const Pricing = () => {
         'Real-time automated data refreshes',
         'Dedicated premium support'
       ]
+    },
+    tcs_nqt: {
+      name: 'TCS NQT Pass',
+      prices: {
+        '1month': 199,
+        '3month': 299,
+        '6month': 399,
+        '12month': 499
+      },
+      badge: 'Special',
+      color: 'border-purple-500/20 hover:border-purple-500/50 text-purple-400 glow-purple',
+      icon: '🚀',
+      features: [
+        'Complete TCS NQT Aptitude Guide',
+        '100+ Practice Questions per Topic',
+        'Interactive Mock Quizzes',
+        'Detailed Formula Cheat Sheets',
+        'Standalone Pass (Valid with Free/Plus)'
+      ]
     }
   };
 
@@ -111,7 +130,10 @@ const Pricing = () => {
         subscriptionTier: response.data.subscription.tier,
         subscriptionPlan: response.data.subscription.plan,
         subscriptionStatus: response.data.subscription.status,
-        subscriptionExpiresAt: response.data.subscription.expiresAt
+        subscriptionExpiresAt: response.data.subscription.expiresAt,
+        tcsNqtSubscriptionStatus: response.data.subscription.tcsNqtStatus,
+        tcsNqtSubscriptionPlan: response.data.subscription.tcsNqtPlan,
+        tcsNqtExpiresAt: response.data.subscription.tcsNqtExpiresAt
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
 
@@ -179,7 +201,7 @@ const Pricing = () => {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 items-stretch">
           {/* FREE TIER CARD */}
           <div className="bg-gray-900/10 backdrop-blur-md p-8 rounded-[2.5rem] border border-gray-800/80 flex flex-col hover:bg-gray-900/20 transition-all duration-300">
             <div className="mb-8">
@@ -288,6 +310,44 @@ const Pricing = () => {
               }`}
             >
               {currentTier === 'premium' ? 'Active / Extend Plan' : 'Go Premium'}
+            </button>
+          </div>
+
+          {/* TCS NQT PASS CARD */}
+          <div className="bg-purple-950/5 backdrop-blur-md p-8 rounded-[2.5rem] border border-purple-500/10 flex flex-col hover:border-purple-500/30 hover:bg-purple-950/10 transition-all duration-300 relative shadow-2xl shadow-purple-950/10 group">
+            <div className="absolute top-5 right-5 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest text-purple-400">
+              {plans.tcs_nqt.badge}
+            </div>
+            <div className="mb-8">
+              <span className="text-[9px] font-black uppercase tracking-widest text-purple-500">Placement Prep</span>
+              <div className="flex items-center gap-2.5 mt-2">
+                <span className="text-2xl">{plans.tcs_nqt.icon}</span>
+                <h3 className="text-xl font-bold text-white">{plans.tcs_nqt.name}</h3>
+              </div>
+              <div className="mt-6 flex items-baseline">
+                <span className="text-4xl font-black text-white">₹{plans.tcs_nqt.prices[duration]}</span>
+                <span className="text-gray-400 text-xs ml-1">/ {duration === '1month' ? 'month' : duration.replace('month', ' months')}</span>
+              </div>
+            </div>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              {plans.tcs_nqt.features.map((feature, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-xs text-gray-300">
+                  <span className="text-purple-400 text-xs">✓</span>
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => handleSubscribeClick('tcs_nqt', plans.tcs_nqt.name, plans.tcs_nqt.prices[duration])}
+              className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border ${
+                (user?.tcsNqtSubscriptionStatus === 'active')
+                  ? 'bg-purple-500/10 text-purple-400 border-purple-500/30 hover:bg-purple-500/20'
+                  : 'bg-purple-500 text-white border-transparent hover:bg-purple-400 shadow-lg shadow-purple-500/10'
+              }`}
+            >
+              {(user?.tcsNqtSubscriptionStatus === 'active') ? 'Active / Extend Plan' : 'Get TCS NQT Pass'}
             </button>
           </div>
         </div>
