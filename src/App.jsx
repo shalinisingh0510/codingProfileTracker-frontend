@@ -26,6 +26,11 @@ import {
 } from './components/RouteGate';
 
 function App() {
+  // Ping the backend on initial load to wake up the Render free tier server
+  React.useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://codingprofiletracker-backend.onrender.com/api'}/`)
+      .catch((err) => console.log('Backend wake-up ping failed or ignored:', err));
+  }, []);
   return (
     <Router>
       <div className="flex flex-col min-h-screen">

@@ -482,8 +482,11 @@ const TcsNqtTopicPage = () => {
 
         {/* ── Loading / Error ── */}
         {loading ? (
-          <div className="bg-[#0b1121] border border-slate-800 rounded-3xl p-24 flex items-center justify-center shadow-2xl">
+          <div className="bg-[#0b1121] border border-slate-800 rounded-3xl p-24 flex flex-col items-center justify-center shadow-2xl gap-4">
             <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin" />
+            <p className="text-gray-400 text-sm animate-pulse text-center max-w-sm mt-4">
+              Loading topic content...<br/><span className="text-xs text-gray-500">(If this is the first request in a while, it may take up to 50 seconds to wake the free tier server.)</span>
+            </p>
           </div>
         ) : error ? (
           <div className="bg-[#0b1121] border border-slate-800 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-2xl">
