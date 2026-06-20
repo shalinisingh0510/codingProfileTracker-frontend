@@ -399,7 +399,6 @@ const TcsNqtTopicPage = () => {
     components: markdownComponents,
   };
 
-  const user = getStoredUser();
   const hasAccess = user?.subscriptionTier === 'premium' || user?.tcsNqtSubscriptionStatus === 'active';
 
   if (!hasAccess) {
